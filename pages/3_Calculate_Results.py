@@ -625,7 +625,7 @@ if url_list:
         rms_3_normalized = float("nan")
 
         with st.expander('Show Specific Calculations' , expanded=True):
-            st.write('Time Period: from', user_time_input_min_jumps_table, "to ", user_time_input_max_jumps_table)
+            st.write('Time Period : from', user_time_input_min_jumps_table, "to ", user_time_input_max_jumps_table)
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                     if url_list[0]['type_of_trial'] == "ISO":
@@ -638,9 +638,14 @@ if url_list:
                         st.write('Force-Max:', round(max(df_brushed['Force']),4))
 
             with col3:
-                    st.write('RMS_1-Mean:', round(df_brushed["RMS_1"].mean(),4))
-                    st.write('RMS_2-Mean:', round(df_brushed['RMS_2'].mean(),4))
-                    st.write('RMS_3-Mean:', round(df_brushed['RMS_3'].mean(),4))
+                    if url_list[0]['type_of_trial'] == "ISO":
+                        st.write('RMS_1_ISO-Mean:', round(df_brushed["RMS_1"].mean(),4))
+                        st.write('RMS_2_ISO-Mean:', round(df_brushed['RMS_2'].mean(),4))
+                        st.write('RMS_3_ISO-Mean:', round(df_brushed['RMS_3'].mean(),4))
+                    else:
+                        st.write('RMS_1-Mean:', round(df_brushed["RMS_1"].mean(),4))
+                        st.write('RMS_2-Mean:', round(df_brushed['RMS_2'].mean(),4))
+                        st.write('RMS_3-Mean:', round(df_brushed['RMS_3'].mean(),4))
             #if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "DJ" or url_list[0]['type_of_trial'] == "SJ":
             with col4:
                     if url_list[0]['type_of_trial'] != "ISO" and rms_1_iso:
@@ -667,17 +672,18 @@ if url_list:
 
         
         #Display Dataframe in Datatable
-        with st.expander("Show Data Table", expanded=True):
-            selected_filtered_columns = st.multiselect(
-            label='What column do you want to display', default=('Time', 'Force', 'Acceleration', 'Velocity', 'RMS_1', 'RMS_2','RMS_3'), help='Click to select', options=df_brushed.columns)
-            st.write(df_brushed[selected_filtered_columns])
-            #Button to export results
-            st.download_button(
-                label="Export table dataset",
-                data=df_brushed[selected_filtered_columns].to_csv(),
-                file_name=url_list[0]['filename'] +'.csv',
-                mime='text/csv',
-            )
+        if url_list[0]['type_of_trial'] != "ISO":
+            with st.expander("Show Data Table", expanded=True):
+                selected_filtered_columns = st.multiselect(
+                label='What column do you want to display', default=('Time', 'Force', 'Acceleration', 'Velocity', 'RMS_1', 'RMS_2','RMS_3'), help='Click to select', options=df_brushed.columns)
+                st.write(df_brushed[selected_filtered_columns])
+                #Button to export results
+                st.download_button(
+                    label="Export table dataset",
+                    data=df_brushed[selected_filtered_columns].to_csv(),
+                    file_name=url_list[0]['filename'] +'.csv',
+                    mime='text/csv',
+                )
         ##### FINAL RESULTS #######
         if url_list[0]['type_of_trial'] != "ISO":
         

@@ -198,7 +198,7 @@ def get_data():
 
 if url_list:
     df = get_data()
-
+    rsi = '-'
     ####### ###### ##### FIND TIMES FOR CMJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "CMJ":
         # Find Take Off Time: 
@@ -482,13 +482,16 @@ if url_list:
             user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1 )#int(df.index.max()))
  
         with c3:
-            rms_1_iso = st.number_input("ISO RMS 1" )
+            if url_list[0]['type_of_trial'] != "ISO":
+                rms_1_iso = st.number_input("ISO RMS 1" )
             
         with c4:
-            rms_2_iso = st.number_input("ISO RMS 2")
+            if url_list[0]['type_of_trial'] != "ISO":
+                rms_2_iso = st.number_input("ISO RMS 2")
             
         with c5:
-            rms_3_iso = st.number_input("ISO RMS 3")
+            if url_list[0]['type_of_trial'] != "ISO":
+                rms_3_iso = st.number_input("ISO RMS 3")
             
         brushed_submitted = st.form_submit_button("Calculate results", help="this is hover")
 
@@ -620,26 +623,33 @@ if url_list:
         rms_1_normalized = float("nan")
         rms_2_normalized = float("nan")
         rms_3_normalized = float("nan")
+
         with st.expander('Show Specific Calculations' , expanded=True):
             st.write('Time Period: from', user_time_input_min_jumps_table, "to ", user_time_input_max_jumps_table)
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                    st.write('Force-Mean:', round(df_brushed["Force"].mean(),4))
-                    st.write('Force-Min:', round(min(df_brushed['Force']),4))
-                    st.write('Force-Max:', round(max(df_brushed['Force']),4))
+                    if url_list[0]['type_of_trial'] == "ISO":
+                        st.write('Force-Mean:', round(df_brushed["Force"].mean()-(url_list[0]['weight']*9.81),4))
+                        st.write('Force-Min:', round(min(df_brushed['Force'])-(url_list[0]['weight']*9.81),4))
+                        st.write('Force-Max:', round(max(df_brushed['Force'])-(url_list[0]['weight']*9.81),4))
+                    else:
+                        st.write('Force-Mean:', round(df_brushed["Force"].mean(),4))
+                        st.write('Force-Min:', round(min(df_brushed['Force']),4))
+                        st.write('Force-Max:', round(max(df_brushed['Force']),4))
+
             with col3:
                     st.write('RMS_1-Mean:', round(df_brushed["RMS_1"].mean(),4))
                     st.write('RMS_2-Mean:', round(df_brushed['RMS_2'].mean(),4))
                     st.write('RMS_3-Mean:', round(df_brushed['RMS_3'].mean(),4))
             #if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "DJ" or url_list[0]['type_of_trial'] == "SJ":
             with col4:
-                    if rms_1_iso:
+                    if url_list[0]['type_of_trial'] != "ISO" and rms_1_iso:
                         rms_1_normalized = df_brushed["RMS_1"].mean() / rms_1_iso
                         st.write("RMS 1 Norm:", round(rms_1_normalized,4))
-                    if rms_2_iso:
+                    if url_list[0]['type_of_trial'] != "ISO" and rms_2_iso:
                         rms_2_normalized = df_brushed["RMS_2"].mean() / rms_2_iso
                         st.write("RMS 2 Norm:", round(rms_2_normalized,4))
-                    if rms_3_iso:
+                    if url_list[0]['type_of_trial'] != "ISO" and rms_3_iso:
                         rms_3_normalized = df_brushed["RMS_3"].mean() / rms_3_iso
                         st.write("RMS 3 Norm:", round(rms_3_normalized,4))          
             if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ":
@@ -668,143 +678,79 @@ if url_list:
                 file_name=url_list[0]['filename'] +'.csv',
                 mime='text/csv',
             )
-
-        st.write('Export All Metrics')
-        specific_metrics = [""]
-        specific_metrics = {#'Unit': ['results'],
-                'Fullname' : url_list[0]['fullname'],
-                'Occupy' : url_list[0]['occupy'],
-                'Type of try' : url_list[0]['type_of_trial'],
-                'Filename' : url_list[0]['filename'],
-                'Body Mass (kg)': url_list[0]['weight'],
-                'Jump (m/s)' : [jump_depending_impluse],
-                'RSI m/s' : [rsi],
-                'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
-                'RMS 1 Norm' : [rms_1_normalized],
-                'RMS 2 Mean' : [df_brushed['RMS_2'].mean()],
-                'RMS 2 Norm' : [rms_2_normalized] if rms_2_normalized is not None else {},
-                'RMS 3 Mean' : [df_brushed['RMS_3'].mean()],
-                'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
-                'Force Mean (N)' : [df_brushed['Force'].mean()],
-                'Force Max (N)' : [max(df_brushed['Force'])],
-                'RFD Total ' + str(user_time_input_min_jumps_table) + '-' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]
-                }
+        ##### FINAL RESULTS #######
+        if url_list[0]['type_of_trial'] != "ISO":
         
-        specific_metrics_df = pd.DataFrame(specific_metrics)
-        #Combine all dataframes to one , for the final export
-        final_results_df = pd.concat([specific_metrics_df, rfd_df1], axis=1, join='inner')
-        #final_results_df['Body Mass (kg)'] = final_results_df['Body Mass (kg)'].round(decimals = 2)
-        final_results_df =np.round(final_results_df, decimals = 4)
-        st.write(final_results_df)
-        #st.write(specific_metrics)
-        st.download_button(
-            label="Export Final Results",
-            data=final_results_df.to_csv(),
-            file_name=url_list[0]['filename'] +'_final_results.csv',
-            mime='text/csv',
-                )
-
-        with st.form("Insert results to Database:"):   
-            verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
-
-            submitted_button_insert_final_results = st.form_submit_button("Insert Results")
-        
-        if submitted_button_insert_final_results:
-            # check if this id allready exists in database
-            def check_if_this_id_entry_exists(supabase):
-                query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
-                return query
-            query = check_if_this_id_entry_exists(con)
+            st.write('Export All Metrics')
+            specific_metrics = [""]
+            specific_metrics = {#'Unit': ['results'],
+                    'Fullname' : url_list[0]['fullname'],
+                    'Occupy' : url_list[0]['occupy'],
+                    'Type of try' : url_list[0]['type_of_trial'],
+                    'Filename' : url_list[0]['filename'],
+                    'Body Mass (kg)': url_list[0]['weight'],
+                    'Jump (m/s)' : [jump_depending_impluse],
+                    'RSI m/s' : [rsi],
+                    'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
+                    'RMS 1 Norm' : [rms_1_normalized],
+                    'RMS 2 Mean' : [df_brushed['RMS_2'].mean()],
+                    'RMS 2 Norm' : [rms_2_normalized] if rms_2_normalized is not None else {},
+                    'RMS 3 Mean' : [df_brushed['RMS_3'].mean()],
+                    'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
+                    'Force Mean (N)' : [df_brushed['Force'].mean()],
+                    'Force Max (N)' : [max(df_brushed['Force'])],
+                    'RFD Total ' + str(user_time_input_min_jumps_table) + '-' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]
+                    }
             
-            # Check if list query.data is empty or not
-            if query.data:
-                st.warning("This entry with this id allready exists in table")
-            else:
-                st.write("Mpika Else", url_id_number_input)
-                # After Export , try to insert these values to statistics table      
-                def add_entries_to_jumps_statistics_table(supabase):
-                        value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
-                                'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
-                        data = supabase.table('jumps_statistics_table').insert(value).execute()
-                def main():
-                    new_entry = add_entries_to_jumps_statistics_table(con)
-                main()
-                st.success('Thank you! A new entry has been inserted to database!')
+            specific_metrics_df = pd.DataFrame(specific_metrics)
+            #Combine all dataframes to one , for the final export
+            final_results_df = pd.concat([specific_metrics_df, rfd_df1], axis=1, join='inner')
+            #final_results_df['Body Mass (kg)'] = final_results_df['Body Mass (kg)'].round(decimals = 2)
+            final_results_df =np.round(final_results_df, decimals = 4)
+            st.write(final_results_df)
+            #st.write(specific_metrics)
+            st.download_button(
+                label="Export Final Results",
+                data=final_results_df.to_csv(),
+                file_name=url_list[0]['filename'] +'_final_results.csv',
+                mime='text/csv',
+                    )
 
-                def select_all_from_jumps_statistics_table():
-                    query=con.table("jumps_statistics_table").select("*").execute()
+            with st.form("Insert results to Database:"):   
+                verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
+
+                submitted_button_insert_final_results = st.form_submit_button("Insert Results")
+            
+            if submitted_button_insert_final_results:
+                # check if this id allready exists in database
+                def check_if_this_id_entry_exists(supabase):
+                    query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
                     return query
-                query = select_all_from_jumps_statistics_table()
-                df_jumps_statistics_table = pd.DataFrame(query.data)
-                st.write("The datatable with Final Results:", df_jumps_statistics_table)
-
-
-
-        #with st.form("Insert results to Database:"):   
-            #verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
-
-            #submitted_button_insert_final_results = st.form_submit_button("Insert Results")
-
-        #if submitted_button_insert_final_results:
-            # @st.experimental_singleton
-            # def init_connection():
-            #     url = st.secrets["supabase_url"]
-            #     key = st.secrets["supabase_key"]
-            #     #client = create_client(url, key)
-            #     return create_client(url, key)
-            # con = init_connection()
-
-            #if verify_check_box_insert_final_results == "Verify":
-    #     st.write("bika")
-    #     def add_entries_to_final_results(supabase):
-    #             value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], 'age': url_list[0]['age'], 'height': url_list[0]['height'], 'weight':url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], 'filepath': url_list[0]['filepath'], 
-    #                         'occupy': url_list[0]['occupy'], 'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(), 'force_mean': round(df_brushed['Force'].mean(),4), 'force_max': round(max(df_brushed['Force']),4)}
-    #             data = supabase.table('final_results').insert(value).execute()
-    #     def main():
-    #         new_entry = add_entries_to_final_results(con)
-    #     main()
-    #     st.success('Thank you! A new entry has been inserted to database!')
-
-    #     def select_all_from_final_results():
-    #         query=con.table("final_results").select("*").execute()
-    #         return query
-    #     query = select_all_from_final_results()
-
-
-    #     df_final_results = pd.DataFrame(query.data)
-    #     st.wri("The datatable with Final Results:", df_final_results)
-    # #else:
-       # st.write("Please verify the check box to insert final results to database!")
-
-        # with st.form("Type the ID of your link:"):   
-
-        #     submitted = st.form_submit_button("Insert Results")
-        # # Querry to find the data row of specific ID
-        # if submitted:
-        #     def add_entries_to_final_results(supabase):
-        #                     value = {'fullname': fullname, 'age': age, 'heigth': height, 'weight':weight, 'type_of_trial': type_of_trial, 'filename': filename, 'filepath': filepath, 'occupy': occupy, 'jump': jump, 'rms_1_mean': rms_1_mean, 'rms_2_mean': rms_2_mean, 'rms_3_mean': rms_3_mean, 'force_mean': force_mean, 'force_max': force_max}
-        #                     data = supabase.table('final_results').insert(value).execute()
-        #     def main():
-        #         new_entry = add_entries_to_final_results(con)
-            
-
-        #     main()
-        #     st.success('Thank you! A new entry has been inserted to database!')
-
-
-        # def select_all_from_final_results():
-        #     query=con.table("final_results").select("*").execute()
-        #     return query
-        # query = select_all_from_final_results()
-
-
-        # df_final_results = pd.DataFrame(query.data)
-        # df_final_results
-    
-
-                #url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results:",value=0,step=1)
+                query = check_if_this_id_entry_exists(con)
                 
+                # Check if list query.data is empty or not
+                if query.data:
+                    st.warning("This entry with this id allready exists in table")
+                else:
+                    st.write("Mpika Else", url_id_number_input)
+                    # After Export , try to insert these values to statistics table      
+                    def add_entries_to_jumps_statistics_table(supabase):
+                            value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
+                                    'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                                    'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
+                            data = supabase.table('jumps_statistics_table').insert(value).execute()
+                    def main():
+                        new_entry = add_entries_to_jumps_statistics_table(con)
+                    main()
+                    st.success('Thank you! A new entry has been inserted to database!')
+
+                    def select_all_from_jumps_statistics_table():
+                        query=con.table("jumps_statistics_table").select("*").execute()
+                        return query
+                    query = select_all_from_jumps_statistics_table()
+                    df_jumps_statistics_table = pd.DataFrame(query.data)
+                    st.write("The datatable with Final Results:", df_jumps_statistics_table)
+
 
 
     ##################### ################### UN BRUSHED AREA ##################### ######################## ###################

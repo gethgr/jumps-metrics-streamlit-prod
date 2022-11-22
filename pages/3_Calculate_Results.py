@@ -49,9 +49,9 @@ with st.sidebar.expander("DELETE USER", expanded=False):
             st.warning("There is no entry with this id to delete!")
 
 
-
+# Fetch and display the whole table with entries:
 url_list=[]
-with st.expander("From here you may display and calculate results from any entry of the database!", expanded=True):
+with st.expander("List of all entries from the database.", expanded=True):
     st.caption("Use the below search fields to filter the datatable!")
     #uploaded_file = st.file_uploader("Choose a file1")
     #@st.experimental_memo(ttl=300)
@@ -63,7 +63,7 @@ with st.expander("From here you may display and calculate results from any entry
 
     df_jumps_table = pd.DataFrame(query.data)
     if not df_jumps_table.empty:
-        df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age']
+        df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor']
         col1, col2, col3 = st.columns([3,2,2])
         with col3:
             type_of_trial_search = st.text_input("Type of Trial:")
@@ -74,7 +74,7 @@ with st.expander("From here you may display and calculate results from any entry
             
 
         if not occupy_search and not fullname_search and not type_of_trial_search:
-            df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age']]
+            df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']]
         
         elif fullname_search and not occupy_search and not type_of_trial_search:
             st.dataframe(df_jumps_table[df_jumps_table['Fullname']== fullname_search])
@@ -560,7 +560,7 @@ if url_list:
             X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
             Y = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'].mean()
             b_rfd1 = (X*Y).sum() / (X ** 2).sum()
-            headers_list_rfd1.append("RFD-"+str(i))
+            headers_list_rfd1.append("RFD -"+(str(i)))
             l_rfd1.append(b_rfd1)
             
             #FIND R-EMG
@@ -713,7 +713,7 @@ if url_list:
             final_results_df = pd.concat([specific_metrics_df, rfd_df1], axis=1, join='inner')
             #final_results_df['Body Mass (kg)'] = final_results_df['Body Mass (kg)'].round(decimals = 2)
             final_results_df =np.round(final_results_df, decimals = 4)
-            st.write(final_results_df)
+            st.write(final_results_df.T, )
             #st.write(specific_metrics)
             st.download_button(
                 label="Export Final Results",

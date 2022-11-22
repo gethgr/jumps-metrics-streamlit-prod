@@ -14,15 +14,14 @@ st.set_page_config(
    
 )
 
-st.sidebar.success("_From this section you can prepare your txt file with raw data!_")
-st.sidebar.info("Import the file in the form.")
-st.sidebar.info("Give the value of the platform mass.")
-st.sidebar.info("Choose your preffered time range area to cut.")
-st.sidebar.info("Check the Verify box and export the file from the 'Export File' button.")
-st.sidebar.info("Finally go to 'Insert New Entry' page to import new data/file from the 'Export File' button.")
-
-
 st.title('Prepare the file')
+st.write('**Into the below form insert the txt file of unconverted raw values from the force platform.**')
+
+st.sidebar.info("Instructions")
+st.sidebar.info("-Use the adjacent form and choose the txt file with the raw data from the force platform for the trial that interests you.")
+st.sidebar.info("-Give the value of the platform mass.")
+st.sidebar.info("-Use the slider to select the time period you want.")
+st.sidebar.info("-Finaly check the Verify box and export the file from the 'Export File' button.")
 
 
 

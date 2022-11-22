@@ -28,19 +28,13 @@ def init_connection():
 con = init_connection()
 
 
-st.sidebar.info("Try to insert a new entry to database.")
-st.sidebar.info("Fill in all the necessary fields of the form.")
-st.sidebar.info("After that, click on the submit values to import the entry into database.")
-st.sidebar.info("Finally go to Calculate Results to see the metrics.")
+st.title("Insert new trial to database")
 
+st.sidebar.info("**Instructions**")
+st.sidebar.info("-If you want to enter an attempt for a user that exists in the database then select the user from the drop down menu and then edit the fields as desired.")
+st.sidebar.info("-If you want to enter an attempt for a user that does not belong to the database then simply fill in the following fields.")
 
-st.title("Import Entry to Database!")
-
-# filepath1 = st.file_uploader("Choose a file1")
-# #filepath2 =os.path.basename(fileitem.filepath1)
-# #fil = pathlib.Path(filepath1.name)
-# filepath1.name
-
+# Fetch all entries from the jumps_table:
 def select_all_from_jumps_table():
     query=con.table("jumps_table").select("*").execute()
     return query
@@ -51,26 +45,30 @@ df_jumps_table = pd.DataFrame(query.data)
 df_jumps_table_unique_values = df_jumps_table.drop_duplicates(subset = ["fullname"])
 
 df_jumps_table_unique_values = df_jumps_table_unique_values.shift()
-df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0]
-fullname_input = st.selectbox("Select a person from the database or fill in the fields below. " , (df_jumps_table_unique_values['fullname']))
+df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0, '-']
+
+st.write("**Select a person from the database or fill in the fields below.**")
+fullname_input = st.selectbox("Select Entry. " , (df_jumps_table_unique_values['fullname']))
 row_index = df_jumps_table_unique_values.index[df_jumps_table_unique_values['fullname']==fullname_input].tolist()
 st.markdown("""---""")
 
 #Create the Form to submit data to database:
+st.write("**Entry Form.**")
+st.caption("Fields with * are required.")
 with st.form("Create a new entry", clear_on_submit=False):
-    col1,col2=st.columns(2)
+    col1, col2 = st.columns(2)
     with col1:
-        fullname = st.text_input("Fullname", value = df_jumps_table_unique_values.loc[row_index[0]]['fullname'])
-        age = st.number_input("Age", value = int(df_jumps_table_unique_values.loc[row_index[0]]['age']), min_value=0, max_value=100, step=1)
-        height = st.number_input("Height in cm", value = df_jumps_table_unique_values.loc[row_index[0]]['height'])
-        weight = st.number_input("Weight in kg", value = df_jumps_table_unique_values.loc[row_index[0]]['weight'])
+        fullname = st.text_input("Fullname", value = df_jumps_table_unique_values.loc[row_index[0]]['fullname'], help="The name & surname of the person.")
+        age = st.number_input("Age", value = int(df_jumps_table_unique_values.loc[row_index[0]]['age']), min_value=0, max_value=100, step=1, help= "The age in years of the person.")
+        height = st.number_input("Height in cm", value = df_jumps_table_unique_values.loc[row_index[0]]['height'], help="The height of the person in cm.")
+        weight = st.number_input("Weight in kg", value = df_jumps_table_unique_values.loc[row_index[0]]['weight'], help="The weight of the person in kg.")
     with col2:
+        instructor = st.text_input("Instructor*", value = df_jumps_table_unique_values.loc[row_index[0]]['instructor'], help="The name & surname of the instructor.")
         email = st.text_input("Email address")
-        occupy = st.text_input("Occupy", value = df_jumps_table_unique_values.loc[row_index[0]]['occupy'])
-        type_of_trial = st.selectbox("Kind of Trial", ('-','CMJ', 'SJ','DJ','ISO' ))
-        filepath = st.file_uploader("Choose a file", type="csv")
-    #checkbox_val = st.checkbox("Form checkbox")
-    submitted = st.form_submit_button("Submit values")
+        occupy = st.text_input("Occupy", value = df_jumps_table_unique_values.loc[row_index[0]]['occupy'], help="The occupy of the person.")
+        type_of_trial = st.selectbox("Type of Trial", ('-','CMJ', 'SJ','DJ','ISO' ), help="Select the type of the trial.")
+    filepath = st.file_uploader("Choose a file", type="csv", help="The file that you prepared in the 'Prepare File' page in csv.")
+    submitted = st.form_submit_button("Submit values", help="By pressing this button, a new entry registers into database.")
     
     if submitted:
         
@@ -112,7 +110,7 @@ with st.form("Create a new entry", clear_on_submit=False):
             list = (fullname,email,occupy,type_of_trial,filename)
             def add_entries_to_jumps_table(supabase):
                 value = {'fullname': fullname, 'email': email, 'occupy': occupy, 'type_of_trial': type_of_trial,
-                        'filename': filename, "filepath": filepath, "height": height, "weight": weight, "age": age }
+                        'filename': filename, "filepath": filepath, "height": height, "weight": weight, "age": age , 'instructor': instructor}
                 data = supabase.table('jumps_table').insert(value).execute()
             def main():
                 new_entry = add_entries_to_jumps_table(con)
@@ -129,12 +127,6 @@ jumps_table_all = select_all_from_jumps_table()
 df_all_from_jumps_table = pd.DataFrame(jumps_table_all.data)
 
 
-# url = st.text_input("Paste the desire url")
-#
-# if url:
-#     storage_options = {'User-Agent': 'Mozilla/5.0'}
-#     df = pd.read_csv(url,storage_options=storage_options)
-#     st.write(df)
 
 
 

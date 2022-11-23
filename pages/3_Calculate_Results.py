@@ -198,7 +198,7 @@ def get_data():
 
 if url_list:
     df = get_data()
-    rsi = '-'
+    rsi = float("nan")
     ####### ###### ##### FIND TIMES FOR CMJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "CMJ":
         # Find Take Off Time: 
@@ -438,15 +438,7 @@ if url_list:
         fig.update_xaxes(
             
             rangeslider_visible=True,
-            # rangeselector=dict(
-            #     buttons=list([
-            #         dict(count=1, label="1m", step="month", stepmode="backward"),
-            #         dict(count=4000, label="6m", step="month", stepmode="backward"),
-            #         dict(count=6000, label="YTD", step="year", stepmode="todate"),
-            #         dict(count=12000, label="1y", step="year", stepmode="backward"),
-            #         dict(step="all")
-            #     ])
-            # )
+            
         )
         # This is to hide by default some line
         fig.for_each_trace(lambda trace: trace.update(visible="legendonly") 
@@ -454,7 +446,13 @@ if url_list:
         st.plotly_chart(fig,use_container_width=True)
 
     ###### ##### ##### DISPLAY Important Times of the graph: ##### ###### ######
-    st.caption("Helpfull information about the times of the graph after the starτ:")
+    if url_list[0]['type_of_trial'] != 'ISO':
+        st.write("#")
+        st.write("**Helpfull information about the times of the graph after the start:**")
+    else:
+        st.write("#")
+        st.write("**Input below fields to calculate results in specific time period:**")
+
     c1, c2, c3 = st.columns(3)
     with c1:
         if url_list[0]['type_of_trial'] == 'CMJ':
@@ -471,29 +469,31 @@ if url_list:
     ###### ###### ###### SELECT TIME PERIOD OF DATASET #### ###### ###### ######## #####
     col1, col2 = st.columns(2)
     r=0  
-    
-    with st.form("sassasaa",clear_on_submit = False):
-        st.caption("Input these fields to calculate specific time period:")
+    with st.form("Form for times",clear_on_submit = False):
         c1, c2, c3, c4, c5= st.columns(5)
         with c1:        
-            user_time_input_min_jumps_table = st.number_input("From Time", value=0, step=1)
+            user_time_input_min_jumps_table = st.number_input("From Time", value=0, step=1, help="Τhe beginning of the desired time interval.")
 
         with c2:
-            user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1 )#int(df.index.max()))
+            user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1, help="The end of the desired time interval." )#int(df.index.max()))
  
         with c3:
             if url_list[0]['type_of_trial'] != "ISO":
-                rms_1_iso = st.number_input("ISO RMS 1" )
+                rms_1_iso = st.number_input("ISO RMS 1", help="The first ISO RMS Value." )
+            else:
+                from_time_rfd_iso = st.number_input("From Time for RFD", value=0, step=1, help="Τhe beginning of the desired time interval for RFD." )
             
         with c4:
             if url_list[0]['type_of_trial'] != "ISO":
-                rms_2_iso = st.number_input("ISO RMS 2")
+                rms_2_iso = st.number_input("ISO RMS 2", help="The second ISO RMS Value.")
+            else:
+                till_time_rfd_iso = st.number_input("Till Time for RFD", value=0, step=1, help="Τhe end of the desired time interval for RFD." )
             
         with c5:
             if url_list[0]['type_of_trial'] != "ISO":
-                rms_3_iso = st.number_input("ISO RMS 3")
+                rms_3_iso = st.number_input("ISO RMS 3", help="The third ISO RMS Value.")
             
-        brushed_submitted = st.form_submit_button("Calculate results", help="this is hover")
+        brushed_submitted = st.form_submit_button("Calculate results")
 
     df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index < user_time_input_max_jumps_table)]
     jump_depending_impluse = float("nan")
@@ -523,7 +523,7 @@ if url_list:
         df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index <= user_time_input_max_jumps_table)]
 
         ######### ######## ########## FIND JUMP DEPENDING ON IMPLUSE FOR CMJ, SJ ############ ########### ############
-        if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ":
+        if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" :
             #Find the Impluse GRF:
             df_brushed['Impulse_grf'] = df_brushed['Force'] * (1/1000)
             impulse_grf = df_brushed['Impulse_grf'].sum()
@@ -541,52 +541,83 @@ if url_list:
         l_rfd1=[] 
         # l_emg1=[] # l_emg2=[] # l_emg3=[]
         b_rfd1=[]
-        b_rfd1=[]
+        #b_rfd1=[]
         # l_emg1=[] # l_emg2=[] # l_emg3=[] # b_emg1=[] # b_emg2=[] # b_emg3=[]
         headers_list_rfd1=[]
         # headers_list_emg1=[] # headers_list_emg2=[] # headers_list_emg3=[]
         rfd_df1=pd.DataFrame()
 
-        # The whole RFD:
-        X_all = df_brushed['Rows_Count'] - df_brushed['Rows_Count'].mean()
-        Y_all = df_brushed['Force'] - df_brushed['Force'].mean()
-        b_rfd1_whole = (X_all*Y_all).sum() / (X_all ** 2).sum()
-        
-        RFP_Total = pd.Series(b_rfd1_whole)
-
-        # emg_df1=pd.DataFrame() # emg_df2=pd.DataFrame() # emg_df3=pd.DataFrame()
-        for i in range(int(user_time_input_min_jumps_table),int(user_time_input_max_jumps_table),50):  
-            ###### FIND RFD on selected time period ######
-            X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
-            Y = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'].mean()
-            b_rfd1 = (X*Y).sum() / (X ** 2).sum()
-            headers_list_rfd1.append("RFD -"+(str(i)))
-            l_rfd1.append(b_rfd1)
-            
-            #FIND R-EMG
-            # X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
-            # Y1 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'].mean()
-            # Y2 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_2'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_2'].mean()
-            # Y3 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_3'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_3'].mean()
-            # b_emg1 = (X*Y1).sum() / (X ** 2).sum()
-            # b_emg2 = (X*Y2).sum() / (X ** 2).sum()
-            # b_emg3 = (X*Y3).sum() / (X ** 2).sum()
-            # headers_list_emg1.append("EMG_1-"+str(i))
-            # headers_list_emg2.append("EMG_2-"+str(i))
-            # headers_list_emg3.append("EMG_3-"+str(i))
-            # l_emg1.append(b_emg1)
-            # l_emg2.append(b_emg2)
-            # l_emg3.append(b_emg3)
-
-        # Create the final dataframe for RFD 
-        if rfd_df1.empty:
-            rfd_df1 = pd.DataFrame([l_rfd1])
-            cols = len(rfd_df1.axes[1])
-            rfd_df1.columns = [*headers_list_rfd1]
+        if url_list[0]['type_of_trial'] == "ISO":
+            # The whole RFD:
+            X_all = df.loc[from_time_rfd_iso:till_time_rfd_iso,'Rows_Count'] - df.loc[from_time_rfd_iso:till_time_rfd_iso,'Rows_Count'].mean()
+            Y_all = df.loc[from_time_rfd_iso:till_time_rfd_iso,'Force'] - df.loc[from_time_rfd_iso:till_time_rfd_iso,'Force'].mean()
+            b_rfd1_whole = (X_all*Y_all).sum() / (X_all ** 2).sum()
+            RFP_Total = pd.Series(b_rfd1_whole)
         else:
-            to_append = l_rfd1
-            rfd_df1_length = len(rfd_df1)
-            rfd_df1.loc[rfd_df1_length] = to_append
+            # The whole RFD:
+            X_all = df_brushed['Rows_Count'] - df_brushed['Rows_Count'].mean()
+            Y_all = df_brushed['Force'] - df_brushed['Force'].mean()
+            b_rfd1_whole = (X_all*Y_all).sum() / (X_all ** 2).sum()
+            RFP_Total = pd.Series(b_rfd1_whole)
+
+        k=0
+        # IF TRIAL IS ISO
+        if url_list[0]['type_of_trial'] == "ISO":
+            for i in range(int(from_time_rfd_iso),int(till_time_rfd_iso+1),50):  
+                ###### FIND RFD on selected time period ######                
+                X = df.loc[from_time_rfd_iso:i:1,'Rows_Count'] - df.loc[from_time_rfd_iso:i:1,'Rows_Count'].mean()
+                Y = df.loc[from_time_rfd_iso:i:1,'Force'] - df.loc[from_time_rfd_iso:i:1,'Force'].mean()
+                b_rfd1 = (X*Y).sum() / (X ** 2).sum()
+                headers_list_rfd1.append("RFD 0 - "+(str(k)))
+                k += 50
+                l_rfd1.append(b_rfd1)
+
+            # Create the final dataframe for RFD 
+            if rfd_df1.empty:
+                rfd_df1 = pd.DataFrame([l_rfd1])
+                cols = len(rfd_df1.axes[1])
+                rfd_df1.columns = [*headers_list_rfd1]
+            else:
+                to_append = l_rfd1
+                rfd_df1_length = len(rfd_df1)
+                rfd_df1.loc[rfd_df1_length] = to_append
+
+        # IF TRIAL IS NOT ISO:
+        # emg_df1=pd.DataFrame() # emg_df2=pd.DataFrame() # emg_df3=pd.DataFrame()
+        else:
+            for i in range(int(user_time_input_min_jumps_table),int(user_time_input_max_jumps_table+1),50):  
+                ###### FIND RFD on selected time period ######
+                X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
+                Y = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Force'].mean()
+                b_rfd1 = (X*Y).sum() / (X ** 2).sum()
+                headers_list_rfd1.append("RFD 0 - "+(str(k)))
+                k += 50
+                l_rfd1.append(b_rfd1)
+                
+                #FIND R-EMG
+                # X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
+                # Y1 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'].mean()
+                # Y2 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_2'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_2'].mean()
+                # Y3 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_3'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_3'].mean()
+                # b_emg1 = (X*Y1).sum() / (X ** 2).sum()
+                # b_emg2 = (X*Y2).sum() / (X ** 2).sum()
+                # b_emg3 = (X*Y3).sum() / (X ** 2).sum()
+                # headers_list_emg1.append("EMG_1-"+str(i))
+                # headers_list_emg2.append("EMG_2-"+str(i))
+                # headers_list_emg3.append("EMG_3-"+str(i))
+                # l_emg1.append(b_emg1)
+                # l_emg2.append(b_emg2)
+                # l_emg3.append(b_emg3)
+
+            # Create the final dataframe for RFD 
+            if rfd_df1.empty:
+                rfd_df1 = pd.DataFrame([l_rfd1])
+                cols = len(rfd_df1.axes[1])
+                rfd_df1.columns = [*headers_list_rfd1]
+            else:
+                to_append = l_rfd1
+                rfd_df1_length = len(rfd_df1)
+                rfd_df1.loc[rfd_df1_length] = to_append
 
         # #Dataframe for EMG1
         # if emg_df1.empty:
@@ -684,11 +715,14 @@ if url_list:
                     file_name=url_list[0]['filename'] +'.csv',
                     mime='text/csv',
                 )
-        ##### FINAL RESULTS #######
-        if url_list[0]['type_of_trial'] != "ISO":
-        
-            st.write('Export All Metrics')
-            specific_metrics = [""]
+
+
+
+        ###### FINAL RESULTS #####
+        st.write("---")
+        st.write('**Final Results Table for user : {}**'.format(url_list[0]['fullname']))
+        specific_metrics = [""]
+        if url_list[0]['type_of_trial'] == 'ISO':
             specific_metrics = {#'Unit': ['results'],
                     'Fullname' : url_list[0]['fullname'],
                     'Occupy' : url_list[0]['occupy'],
@@ -704,58 +738,78 @@ if url_list:
                     'RMS 3 Mean' : [df_brushed['RMS_3'].mean()],
                     'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
                     'Force Mean (N)' : [df_brushed['Force'].mean()],
-                    'Force Max (N)' : [max(df_brushed['Force'])],
-                    'RFD Total ' + str(user_time_input_min_jumps_table) + '-' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]
+                    'Force Max (N)' : [max(df_brushed['Force'])],  
+                    'RFD Total ' + str(from_time_rfd_iso) + ' - ' + str(till_time_rfd_iso) : [b_rfd1_whole]                
                     }
-            
-            specific_metrics_df = pd.DataFrame(specific_metrics)
-            #Combine all dataframes to one , for the final export
-            final_results_df = pd.concat([specific_metrics_df, rfd_df1], axis=1, join='inner')
-            #final_results_df['Body Mass (kg)'] = final_results_df['Body Mass (kg)'].round(decimals = 2)
-            final_results_df =np.round(final_results_df, decimals = 4)
-            st.write(final_results_df.T, )
-            #st.write(specific_metrics)
-            st.download_button(
-                label="Export Final Results",
-                data=final_results_df.to_csv(),
-                file_name=url_list[0]['filename'] +'_final_results.csv',
-                mime='text/csv',
-                    )
+        else:
+            specific_metrics = {#'Unit': ['results'],
+                    'Fullname' : url_list[0]['fullname'],
+                    'Occupy' : url_list[0]['occupy'],
+                    'Type of try' : url_list[0]['type_of_trial'],
+                    'Filename' : url_list[0]['filename'],
+                    'Body Mass (kg)': url_list[0]['weight'],
+                    'Jump (m/s)' : [jump_depending_impluse],
+                    'RSI m/s' : [rsi],
+                    'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
+                    'RMS 1 Norm' : [rms_1_normalized],
+                    'RMS 2 Mean' : [df_brushed['RMS_2'].mean()],
+                    'RMS 2 Norm' : [rms_2_normalized] if rms_2_normalized is not None else {},
+                    'RMS 3 Mean' : [df_brushed['RMS_3'].mean()],
+                    'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
+                    'Force Mean (N)' : [df_brushed['Force'].mean()],
+                    'Force Max (N)' : [max(df_brushed['Force'])],  
+                    'RFD Total ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
+                    }
 
-            with st.form("Insert results to Database:"):   
-                verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
 
-                submitted_button_insert_final_results = st.form_submit_button("Insert Results")
+        specific_metrics_df = pd.DataFrame(specific_metrics)
+        #Combine all dataframes to one , for the final export
+        final_results_df = pd.concat([specific_metrics_df, rfd_df1], axis=1, join='inner')
+        final_results_df =np.round(final_results_df, decimals = 4)        
+
+        st.dataframe(final_results_df.T, use_container_width=True )
+        #st.write(specific_metrics)
+        st.download_button(
+            label="Export Final Results",
+            data=final_results_df.to_csv(),
+            file_name=url_list[0]['filename'] +'_final_results.csv',
+            mime='text/csv',
+                )
+
+        with st.form("Insert results to Database:"):   
+            verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
+
+            submitted_button_insert_final_results = st.form_submit_button("Insert Results")
+        
+        if submitted_button_insert_final_results:
+            # check if this id allready exists in database
+            def check_if_this_id_entry_exists(supabase):
+                query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
+                return query
+            query = check_if_this_id_entry_exists(con)
             
-            if submitted_button_insert_final_results:
-                # check if this id allready exists in database
-                def check_if_this_id_entry_exists(supabase):
-                    query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
+            # Check if list query.data is empty or not
+            if query.data:
+                st.warning("This entry with this id allready exists in table")
+            else:
+                st.write("Mpika Else", url_id_number_input)
+                # After Export , try to insert these values to statistics table      
+                def add_entries_to_jumps_statistics_table(supabase):
+                        value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
+                                'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                                'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
+                        data = supabase.table('jumps_statistics_table').insert(value).execute()
+                def main():
+                    new_entry = add_entries_to_jumps_statistics_table(con)
+                main()
+                st.success('Thank you! A new entry has been inserted to database!')
+
+                def select_all_from_jumps_statistics_table():
+                    query=con.table("jumps_statistics_table").select("*").execute()
                     return query
-                query = check_if_this_id_entry_exists(con)
-                
-                # Check if list query.data is empty or not
-                if query.data:
-                    st.warning("This entry with this id allready exists in table")
-                else:
-                    st.write("Mpika Else", url_id_number_input)
-                    # After Export , try to insert these values to statistics table      
-                    def add_entries_to_jumps_statistics_table(supabase):
-                            value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                    'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
-                                    'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
-                            data = supabase.table('jumps_statistics_table').insert(value).execute()
-                    def main():
-                        new_entry = add_entries_to_jumps_statistics_table(con)
-                    main()
-                    st.success('Thank you! A new entry has been inserted to database!')
-
-                    def select_all_from_jumps_statistics_table():
-                        query=con.table("jumps_statistics_table").select("*").execute()
-                        return query
-                    query = select_all_from_jumps_statistics_table()
-                    df_jumps_statistics_table = pd.DataFrame(query.data)
-                    st.write("The datatable with Final Results:", df_jumps_statistics_table)
+                query = select_all_from_jumps_statistics_table()
+                df_jumps_statistics_table = pd.DataFrame(query.data)
+                st.write("The datatable with Final Results:", df_jumps_statistics_table)
 
 
 

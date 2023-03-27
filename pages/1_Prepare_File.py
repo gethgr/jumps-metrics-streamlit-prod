@@ -31,9 +31,14 @@ platform_mass = st.number_input("Give the platfrom mass:")
 #@st.cache(allow_output_mutation=True)
 def get_data():
     if uploaded_file:
-        df_raw_data = pd.read_csv(uploaded_file, sep='\s+', skiprows=10, index_col = None)
+        df_raw_data = pd.read_csv(uploaded_file,  skiprows=10, index_col = None) # sep='\s+',
         #Define Header columns
         columns_count = len(df_raw_data.axes[1])
+        # if columns_count == 4:
+        #     df_raw_data.columns = ['Time', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
+        #st.write(columns_count)
+        if columns_count == 5:
+            df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
         if columns_count == 6:
             df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
         if columns_count == 8:
@@ -62,11 +67,13 @@ def get_data():
         # Calculate the sum of all sensors Mass $ Weight
         df_raw_data['Mass_Sum'] = (df_raw_data['Mass_1'] + df_raw_data['Mass_2'] + df_raw_data['Mass_3'] + df_raw_data['Mass_4']) - platform_mass
         df_raw_data['Rows_Count'] = df_raw_data.index
+        
         return df_raw_data
 
 if uploaded_file:
     
     df_raw_data= get_data()
+    #st.write(columns_count)
     
     # if st.button('Reload Dataframe with Raw Data'):
     #     get_data()

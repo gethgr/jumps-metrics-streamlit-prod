@@ -238,7 +238,7 @@ if url_list:
     ####### ###### ##### FIND TIMES FOR DJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "DJ":
         for i in range(len(df.index)):
-            if df.loc[i,'Force'] > 3:
+            if df.loc[i,'Force'] > 30:
                 start_try_time = i
                 break
         for i in range(start_try_time,len(df.index)):
@@ -700,8 +700,6 @@ if url_list:
                         st.write('Jump (Time in Air):', round(jump_depending_time_in_air,4))
                         st.write('RSI:', round(rsi,4))
                         
-
-        
         #Display Dataframe in Datatable
         if url_list[0]['type_of_trial'] != "ISO":
             with st.expander("Show Data Table", expanded=True):
@@ -715,8 +713,6 @@ if url_list:
                     file_name=url_list[0]['filename'] +'.csv',
                     mime='text/csv',
                 )
-
-
 
         ###### FINAL RESULTS #####
         st.write("---")
@@ -760,7 +756,6 @@ if url_list:
                     'Force Max (N)' : [max(df_brushed['Force'])],  
                     'RFD Total ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
                     }
-
 
         specific_metrics_df = pd.DataFrame(specific_metrics)
         #Combine all dataframes to one , for the final export

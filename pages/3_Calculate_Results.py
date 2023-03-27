@@ -448,7 +448,7 @@ if url_list:
     ###### ##### ##### DISPLAY Important Times of the graph: ##### ###### ######
     if url_list[0]['type_of_trial'] != 'ISO':
         st.write("#")
-        st.write("**Helpfull information about the times of the graph after the start:**")
+        st.write("**Helpfull information about the times of the graph after the start!:**")
     else:
         st.write("#")
         st.write("**Input below fields to calculate results in specific time period:**")

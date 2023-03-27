@@ -238,7 +238,7 @@ if url_list:
     ####### ###### ##### FIND TIMES FOR DJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "DJ":
         for i in range(len(df.index)):
-            if df.loc[i,'Force'] > 30:
+            if df.loc[i,'Force'] > 60:
                 start_try_time = i
                 break
         for i in range(start_try_time,len(df.index)):

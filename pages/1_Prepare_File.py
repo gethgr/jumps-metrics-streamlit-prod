@@ -31,7 +31,7 @@ platform_mass = st.number_input("Give the platfrom mass:")
 #@st.cache(allow_output_mutation=True)
 def get_data():
     if uploaded_file:
-        df_raw_data = pd.read_csv(uploaded_file,  skiprows=10, index_col = None) # sep='\s+',
+        df_raw_data = pd.read_csv(uploaded_file,  sep='\s+', skiprows=10, index_col = None) # 
         #Define Header columns
         columns_count = len(df_raw_data.axes[1])
         # if columns_count == 4:

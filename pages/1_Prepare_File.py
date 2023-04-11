@@ -106,7 +106,7 @@ if uploaded_file:
         export = st.checkbox('Verify you have insert proper Platform Mass Value:')
 
         if export:
-            if 4.5 <= platform_mass <= 7.5:
+            if 4.5 <= platform_mass <= 10:
                 st.success("You are able to export your data.")
                 st.download_button(
                     label="Export File",

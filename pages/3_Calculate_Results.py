@@ -63,7 +63,7 @@ with st.expander("List of all entries from the database.", expanded=True):
 
     df_jumps_table = pd.DataFrame(query.data)
     if not df_jumps_table.empty:
-        df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor']
+        df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
         with col3:
             type_of_trial_search = st.text_input("Type of Trial:")
@@ -157,6 +157,8 @@ def get_data():
             df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
             df['Velocity'] = df.Start_Velocity.rolling(window=999999,min_periods=1).sum()
 
+           # gia to 6o deuterolepto , vriskw thn mesh timh tou 5o k 6o sthn epitaxinsi kai to prosthetw sthn taxitita tou 5ou 
+
         # THIS IS ALL FOR EMG TO RMS 1
         if 'Col_9' in df.columns:
             # [Baseline Removal] Convert Raw Data EMG to EMG
@@ -238,7 +240,7 @@ if url_list:
     ####### ###### ##### FIND TIMES FOR DJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "DJ":
         for i in range(len(df.index)):
-            if df.loc[i,'Force'] > 60:
+            if df.loc[i,'Force'] > 27:
                 start_try_time = i
                 break
         for i in range(start_try_time,len(df.index)):
@@ -249,9 +251,14 @@ if url_list:
             if df.loc[i,'Force'] > 35:
                 landing_time = i
                 break
-        df.loc[start_try_time:len(df.index):1, 'Acceleration'] = (df.loc[start_try_time:len(df.index):1, 'Force'] / url_list[0]['weight']) - 9.81
+        st.write("BIKA STO DJ")
+        #df['Acceleration']
+        #df['Acceleration'] = (df['Force'] / url_list[0]['weight']) - 9.81
+        df.loc[start_try_time:len(df), 'Acceleration'] = (df.loc[start_try_time:len(df), 'Force'] / url_list[0]['weight']) - 9.81
+        df['Acceleration']
         df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
-        df['Velocity'] = df.Start_Velocity.rolling(window=999999,min_periods=1).sum()
+        df['Start_Velocity']
+        df['Velocity'] = df.Start_Velocity.rolling(window=99999,min_periods=1).sum()
     
     with st.expander(("Graph"), expanded=True):
         #### CREATE THE MAIN CHART #####
@@ -280,8 +287,8 @@ if url_list:
         # plot and name the yaxis as yaxis3 values
         fig.add_trace(go.Scatter(
             x=df['Rows_Count'],
-            y=df['RMS_1'],
-            name="RMS_1",
+            y=df['Acceleration'],
+            name="Acceleration",
             yaxis="y3"
         ))
         # add x and y values for the 4th scatter plot

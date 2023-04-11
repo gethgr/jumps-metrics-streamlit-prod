@@ -20,7 +20,7 @@ st.set_page_config(
 
 
 #Make the connection with Supabase - Database:
-@st.experimental_memo
+# @st.experimental_memo
 def init_connection():
     url = st.secrets["supabase_url"]
     key = st.secrets["supabase_key"]

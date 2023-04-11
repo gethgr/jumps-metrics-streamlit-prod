@@ -18,8 +18,9 @@ st.set_page_config(
     
 )
 
+
 #Make the connection with Supabase - Database:
-@st.experimental_singleton
+@st.cache_resource
 def init_connection():
     url = st.secrets["supabase_url"]
     key = st.secrets["supabase_key"]
@@ -45,7 +46,7 @@ df_jumps_table = pd.DataFrame(query.data)
 df_jumps_table_unique_values = df_jumps_table.drop_duplicates(subset = ["fullname"])
 
 df_jumps_table_unique_values = df_jumps_table_unique_values.shift()
-df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0, '-']
+df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0, '-', float("Nan")]
 
 st.write("**Select a person from the database or fill in the fields below.**")
 fullname_input = st.selectbox("Select Entry. " , (df_jumps_table_unique_values['fullname']))
@@ -58,16 +59,22 @@ st.caption("Fields with * are required.")
 with st.form("Create a new entry", clear_on_submit=False):
     col1, col2 = st.columns(2)
     with col1:
-        fullname = st.text_input("Fullname", value = df_jumps_table_unique_values.loc[row_index[0]]['fullname'], help="The name & surname of the person.")
-        age = st.number_input("Age", value = int(df_jumps_table_unique_values.loc[row_index[0]]['age']), min_value=0, max_value=100, step=1, help= "The age in years of the person.")
-        height = st.number_input("Height in cm", value = df_jumps_table_unique_values.loc[row_index[0]]['height'], help="The height of the person in cm.")
-        weight = st.number_input("Weight in kg", value = df_jumps_table_unique_values.loc[row_index[0]]['weight'], help="The weight of the person in kg.")
+        fullname = st.text_input("Fullname*", value = df_jumps_table_unique_values.loc[row_index[0]]['fullname'], help="The name & surname of the person.")
+        age = st.number_input("Age*", value = int(df_jumps_table_unique_values.loc[row_index[0]]['age']), min_value=0, max_value=100, step=1, help= "The age in years of the person.")
+        height = st.number_input("Height (cm)*", value = df_jumps_table_unique_values.loc[row_index[0]]['height'], help="The height of the person in cm.")
+        weight = st.number_input("Weight (kg)*", value = df_jumps_table_unique_values.loc[row_index[0]]['weight'], help="The weight of the person in kg.")
     with col2:
-        instructor = st.text_input("Instructor*", value = df_jumps_table_unique_values.loc[row_index[0]]['instructor'], help="The name & surname of the instructor.")
+        instructor = st.text_input("Instructor", value = df_jumps_table_unique_values.loc[row_index[0]]['instructor'], help="The name & surname of the instructor.")
         email = st.text_input("Email address")
         occupy = st.text_input("Occupy", value = df_jumps_table_unique_values.loc[row_index[0]]['occupy'], help="The occupy of the person.")
-        type_of_trial = st.selectbox("Type of Trial", ('-','CMJ', 'SJ','DJ','ISO' ), help="Select the type of the trial.")
-    filepath = st.file_uploader("Choose a file", type="csv", help="The file that you prepared in the 'Prepare File' page in csv.")
+        type_of_trial = st.selectbox("Type of Trial", ('-','CMJ', 'SJ','DJ','ISO' ),  help="Select the type of the trial.")
+
+        # if 3>2:
+        #     st.write(type_of_trial)
+        drop_height = st.number_input("Drop Height (m)",  help="The height of the drop jump.")
+        
+        
+    filepath = st.file_uploader("Choose a file*", type="csv", help="The file that you prepared in the 'Prepare File' page in csv.")
     submitted = st.form_submit_button("Submit values", help="By pressing this button, a new entry registers into database.")
     
     if submitted:

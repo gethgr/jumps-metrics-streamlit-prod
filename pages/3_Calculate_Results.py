@@ -327,8 +327,8 @@ if url_list:
         # plot and name the yaxis as yaxis3 values
         fig.add_trace(go.Scatter(
             x=df['Rows_Count'],
-            y=df['RMS_2'],
-            name="RMS_2",
+            y=df['RMS_1'],
+            name="RMS_1",
             yaxis="y3"
         ))
         # add x and y values for the 4th scatter plot

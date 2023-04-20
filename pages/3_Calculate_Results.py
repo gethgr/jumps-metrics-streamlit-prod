@@ -7,6 +7,8 @@ import altair as alt
 import biosignalsnotebooks as bsnb
 import plotly.graph_objects as go
 import sympy as sy
+from io import BytesIO
+from pyxlsb import open_workbook as open_xlsb
 
 ############## ############## PAGE 3 CALCULATE RESULTS ############# ############# ############## ########################
 st.set_page_config(
@@ -18,6 +20,7 @@ st.set_page_config(
 
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton
+g = 9.81
 def init_connection():
     url = st.secrets["supabase_url"]
     key = st.secrets["supabase_key"]
@@ -251,14 +254,51 @@ if url_list:
             if df.loc[i,'Force'] > 35:
                 landing_time = i
                 break
-        st.write("BIKA STO DJ")
-        #df['Acceleration']
-        #df['Acceleration'] = (df['Force'] / url_list[0]['weight']) - 9.81
-        df.loc[start_try_time:len(df), 'Acceleration'] = (df.loc[start_try_time:len(df), 'Force'] / url_list[0]['weight']) - 9.81
-        df['Acceleration']
-        df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
-        df['Start_Velocity']
-        df['Velocity'] = df.Start_Velocity.rolling(window=99999,min_periods=1).sum()
+        
+        drop_height = 0.25
+        velocity_landing =  - ( 2 * g * drop_height ) * (1/2)
+        
+        force_empty = (df.loc[0:1000, 'Force'] / 9.81).mean()
+        
+        st.write(force_empty * g * 1.05)
+        
+        
+        for i in range (0,len(df)):
+            if df.loc[i, 'Force'] < force_empty * g * 1.05 :
+                df.loc[i,'Velocity'] = velocity_landing
+            
+            if df.loc[i, 'Force'] > force_empty * g * 1.05 and df.loc[i, 'Force'] < url_list[0]['weight'] * g :
+                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
+
+            if df.loc[i, 'Force'] > url_list[0]['weight'] * g :
+                df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Force'].mean() * 0.01 / ( url_list[0]['weight'] * g )
+        
+        
+        closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
+        #closest_to_zero_force = df.loc[start_try_time:len(df),'Force'].sub(0).abs().idxmin()
+
+        concentric_time = take_off_time - closest_to_zero_velocity 
+
+
+        vel_takeoff = (concentric_time / 1000 * 795) / url_list[0]['weight']
+
+
+        jump = vel_takeoff ** 2 / 2 * g
+        st.write('closest_to_zero_velocity',closest_to_zero_velocity)
+        st.write('take_off_time',take_off_time)
+        st.write('time', concentric_time)
+        st.write('velocit take off', vel_takeoff)
+        st.write('alma',jump)
+        st.write('landing velocity', velocity_landing)
+        
+
+
+
+        # df.loc[start_try_time:len(df), 'Acceleration'] = (df.loc[start_try_time:len(df), 'Force'] / url_list[0]['weight']) - 9.81
+        # df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
+        # df['Velocity'] = df.Start_Velocity.rolling(window=99999,min_periods=1).sum()
+
+        df.loc[take_off_time, 'Velocity']
     
     with st.expander(("Graph"), expanded=True):
         #### CREATE THE MAIN CHART #####
@@ -287,8 +327,8 @@ if url_list:
         # plot and name the yaxis as yaxis3 values
         fig.add_trace(go.Scatter(
             x=df['Rows_Count'],
-            y=df['Acceleration'],
-            name="Acceleration",
+            y=df['RMS_2'],
+            name="RMS_2",
             yaxis="y3"
         ))
         # add x and y values for the 4th scatter plot
@@ -771,6 +811,23 @@ if url_list:
 
         st.dataframe(final_results_df.T, use_container_width=True )
         #st.write(specific_metrics)
+        def to_excel(final_results_df):
+            output = BytesIO()
+            writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            final_results_df.to_excel(writer, index=False, sheet_name='Sheet1')
+            workbook = writer.book
+            worksheet = writer.sheets['Sheet1']
+            format1 = workbook.add_format({'num_format': '0.00'}) 
+            worksheet.set_column('A:A', None, format1)  
+            writer.save()
+            processed_data = output.getvalue()
+            return processed_data
+
+        df_xlsx = to_excel(final_results_df)
+        st.download_button(label='Export Final Results xlsx',
+                                        data=df_xlsx ,
+                                        file_name= url_list[0]['filename'] + '_.xlsx')
+
         st.download_button(
             label="Export Final Results",
             data=final_results_df.to_csv(),

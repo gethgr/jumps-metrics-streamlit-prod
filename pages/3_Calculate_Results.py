@@ -154,6 +154,11 @@ def get_data():
 
         # Calculate The Column Force
         df['Force'] = df['Mass_Sum'] * 9.81
+
+        #IF type_of_trial = ISO , αφαιρεσε το σωματικο βαρος.
+        if url_list[0]['type_of_trial'] == "ISO":
+            df['Force'] = df['Force'] - url_list[0]['weight'] * 9.81
+
         # Calculate Acceleration, Velocity for CMJ and SJ Trials:
         if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ":
             df['Acceleration'] = (df['Force'] / url_list[0]['weight']) - 9.81
@@ -707,9 +712,9 @@ if url_list:
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                     if url_list[0]['type_of_trial'] == "ISO":
-                        st.write('Force-Mean:', round(df_brushed["Force"].mean()-(url_list[0]['weight']*9.81),4))
-                        st.write('Force-Min:', round(min(df_brushed['Force'])-(url_list[0]['weight']*9.81),4))
-                        st.write('Force-Max:', round(max(df_brushed['Force'])-(url_list[0]['weight']*9.81),4))
+                        st.write('Force-Mean:', round(df_brushed["Force"].mean(),4))
+                        st.write('Force-Min:', round(min(df_brushed['Force']),4))
+                        st.write('Force-Max:', round(max(df_brushed['Force']),4))
                     else:
                         st.write('Force-Mean:', round(df_brushed["Force"].mean(),4))
                         st.write('Force-Min:', round(min(df_brushed['Force']),4))

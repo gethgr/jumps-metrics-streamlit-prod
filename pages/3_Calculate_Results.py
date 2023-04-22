@@ -84,7 +84,7 @@ with st.expander("List of all entries from the database.", expanded=True):
         
 
         if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
-            df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']]
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False))
         
         elif fullname_search and not occupy_search and type_of_trial_search == " ":
             st.dataframe(df_jumps_table[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
@@ -93,7 +93,7 @@ with st.expander("List of all entries from the database.", expanded=True):
             st.dataframe(df_jumps_table[df_jumps_table['Occupy']== occupy_search], use_container_width=True)
 
         elif type_of_trial_search and fullname_search == " " and not occupy_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Type of Trial']== type_of_trial_search], use_container_width=True)
+            st.dataframe(df_jumps_table[df_jumps_table['Type of Trial']== type_of_trial_search])
 
         elif fullname_search and occupy_search and not type_of_trial_search:
             df_jumps_table[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Occupy'] == occupy_search)]

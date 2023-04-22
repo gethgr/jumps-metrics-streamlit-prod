@@ -65,28 +65,35 @@ with st.expander("List of all entries from the database.", expanded=True):
 
 
     df_jumps_table = pd.DataFrame(query.data)
+    fullname_search = " "
     if not df_jumps_table.empty:
         df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
-        with col3:
-            type_of_trial_search = st.text_input("Type of Trial:")
         with col2:
+            type_of_trial_search = st.selectbox("Επέλεξε ίδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO"))
+        with col3:
             occupy_search = st.text_input("Occupy:")
         with col1:
-            fullname_search = st.text_input("Fullname:")
-            
+            unique_fullnames = df_jumps_table['Fullname'].unique()
+            #st.write(df_jumps_table['Fullname'].unique())
+            options =[" "] + [unique_fullnames[i] for i in range (0, len(unique_fullnames)) ]
+            #i = df_jumps_table.loc[i,['Fullname']]]
 
-        if not occupy_search and not fullname_search and not type_of_trial_search:
+            fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
+        
+        
+
+        if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
             df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']]
         
-        elif fullname_search and not occupy_search and not type_of_trial_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Fullname']== fullname_search])
+        elif fullname_search and not occupy_search and type_of_trial_search == " ":
+            st.dataframe(df_jumps_table[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
 
         elif occupy_search and not fullname_search and not type_of_trial_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Occupy']== occupy_search])
+            st.dataframe(df_jumps_table[df_jumps_table['Occupy']== occupy_search], use_container_width=True)
 
-        elif type_of_trial_search and not fullname_search and not occupy_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Type of Trial']== type_of_trial_search])
+        elif type_of_trial_search and fullname_search == " " and not occupy_search:
+            st.dataframe(df_jumps_table[df_jumps_table['Type of Trial']== type_of_trial_search], use_container_width=True)
 
         elif fullname_search and occupy_search and not type_of_trial_search:
             df_jumps_table[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Occupy'] == occupy_search)]

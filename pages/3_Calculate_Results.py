@@ -10,6 +10,13 @@ import sympy as sy
 from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
 
+# biosignalsnotebooks own package for loading and plotting the acquired data
+import biosignalsnotebooks as bsnb
+
+# Scientific packages
+from numpy import arange, sin, pi
+from numpy.random import randn
+
 ############## ############## PAGE 3 CALCULATE RESULTS ############# ############# ############## ########################
 st.set_page_config(
     page_title="Tefaa Metrics",
@@ -66,6 +73,9 @@ with st.expander("List of all entries from the database.", expanded=True):
 
     df_jumps_table = pd.DataFrame(query.data)
     fullname_search = " "
+
+
+
     if not df_jumps_table.empty:
         df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
@@ -208,6 +218,8 @@ def get_data():
             #This is RMS per 100
             df['RMS_3'] = df.pre_pro_signal_EMG_3.rolling(window=100,min_periods=100).mean()**(1/2)
         
+        df['Force'] = bsnb.lowpass(df['Force'], 20, order=2, use_filtfilt=True)
+
         return df
 
 
@@ -215,17 +227,35 @@ def get_data():
 
 if url_list:
     df = get_data()
-    rsi = float("nan")
+
+    #Find standard deviation
+
+    for i in range(0,450):
+         xi_xmean = (((df.loc[i, 'Force'] - df.loc[1:450,'Force'].mean()))*2)
+
+    xi_xmean_sum = xi_xmean.sum()
+    
+    std = ( ( xi_xmean_sum ** 2 ) / ( 2000 -1 ) ) * ( 1 / 2)
+    #st.write(std)
+    #5*std
+    #rsi = float("nan")
+    #df.loc[1559,'Force']
     ####### ###### ##### FIND TIMES FOR CMJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "CMJ":
         # Find Take Off Time: 
         for i in range (0, len(df.index)):
-            if df.loc[i,'Force'] < 2:
+            if df.loc[i,'Force'] < 2 :
                 take_off_time = i
                 break
+        
+        # mesos oros tou diastimatos twn xronikwn timwn
+
+        # Tipikh apoklish : tetragonizkh riza tou athroismatos twn xronikwn timwn 
+
+
         # Find Landing Time:
         for i in range (take_off_time, len(df.index)):
-            if df.loc[i,'Force'] > 55:
+            if df.loc[i,'Force'] > 80:
                 landing_time = i - 1
                 break
         # Find Start Try Time
@@ -235,7 +265,27 @@ if url_list:
                 break
         closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
         closest_to_average_force_1st = (df.loc[start_try_time:closest_to_zero_velocity,'Force']-df['Force'].mean()).sub(0).abs().idxmin()
-   
+
+        # df1 = df.copy()
+
+        # for i in range(start_try_time, len(df)):
+        #     df.loc[i, 'NForce'] = df.loc[i, 'Force']
+        
+        # df['NAcceleration'] = (df['NForce'] / url_list[0]['weight']) - 9.81
+        # st.write('blabla', df['NForce'])
+        # df['NStart_Velocity'] = df.NAcceleration.rolling(window=2,min_periods=1).mean()*0.001
+        # df['NVelocity'] = df.NStart_Velocity.rolling(window=999999,min_periods=1).sum()
+        # df['NAcceleration']
+        # df['NVelocity']
+
+        # for i in range (0, len(df.index)):
+        #     if df.loc[i,'NForce'] < 2 :
+        #         Ntake_off_time = i
+        #         break
+        # st.write("NVelocity take off", df.loc[Ntake_off_time, 'NVelocity'])
+        # st.write("Velocity take off", df.loc[take_off_time, 'Velocity'])
+        # NJump = (df.loc[Ntake_off_time, 'NVelocity'] ** 2) / (2 * 9.81)
+        # st.write("ALMA", NJump)
     ####### ###### ##### FIND TIMES FOR SJ TRIAL ####### ######### #######
     if url_list[0]['type_of_trial'] == "SJ":
         for i in range (0, len(df.index)):
@@ -267,23 +317,25 @@ if url_list:
                 landing_time = i
                 break
         
+
         drop_height = 0.25
         velocity_landing =  - ( 2 * g * drop_height ) * (1/2)
         
-        force_empty = (df.loc[0:1000, 'Force'] / 9.81).mean()
+        force_empty = (df.loc[0:300, 'Force']).mean()
         
-        st.write(force_empty * g * 1.05)
+        st.write('force_empty * g * 1.05', force_empty * g * 1.05)
         
-        
+        df['Force_plin_body_g'] = df['Force'] - url_list[0]['weight'] * g
+        df['Force_plin_body_g']
         for i in range (0,len(df)):
             if df.loc[i, 'Force'] < force_empty * g * 1.05 :
                 df.loc[i,'Velocity'] = velocity_landing
             
             if df.loc[i, 'Force'] > force_empty * g * 1.05 and df.loc[i, 'Force'] < url_list[0]['weight'] * g :
-                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
+                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Force_plin_body_g'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
 
             if df.loc[i, 'Force'] > url_list[0]['weight'] * g :
-                df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Force'].mean() * 0.01 / ( url_list[0]['weight'] * g )
+                df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Force_plin_body_g'].mean() * 0.01 / ( url_list[0]['weight'] * g )
         
         
         closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
@@ -296,10 +348,14 @@ if url_list:
 
 
         jump = vel_takeoff ** 2 / 2 * g
+
+        st.write('force empty',force_empty)
         st.write('closest_to_zero_velocity',closest_to_zero_velocity)
         st.write('take_off_time',take_off_time)
         st.write('time', concentric_time)
         st.write('velocit take off', vel_takeoff)
+        st.write('velocity take off apo stilh', df.loc[take_off_time, 'Velocity'])
+
         st.write('alma',jump)
         st.write('landing velocity', velocity_landing)
         

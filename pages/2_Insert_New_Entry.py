@@ -117,7 +117,7 @@ with st.form("Create a new entry", clear_on_submit=False):
             list = (fullname,email,occupy,type_of_trial,filename)
             def add_entries_to_jumps_table(supabase):
                 value = {'fullname': fullname, 'email': email, 'occupy': occupy, 'type_of_trial': type_of_trial,
-                        'filename': filename, "filepath": filepath, "height": height, "weight": weight, "age": age , 'instructor': instructor}
+                        'filename': filename, "filepath": filepath, "height": height, "weight": weight, "age": age , 'instructor': instructor, 'drop_height': drop_height}
                 data = supabase.table('jumps_table').insert(value).execute()
             def main():
                 new_entry = add_entries_to_jumps_table(con)

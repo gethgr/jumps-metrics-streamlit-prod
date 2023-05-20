@@ -247,11 +247,6 @@ if url_list:
             if df.loc[i,'Force'] < 2 :
                 take_off_time = i
                 break
-        
-        # mesos oros tou diastimatos twn xronikwn timwn
-
-        # Tipikh apoklish : tetragonizkh riza tou athroismatos twn xronikwn timwn 
-
 
         # Find Landing Time:
         for i in range (take_off_time, len(df.index)):
@@ -303,6 +298,10 @@ if url_list:
                 break
 
     ####### ###### ##### FIND TIMES FOR DJ TRIAL ####### ######### #######
+
+    # Φτιαχνω νεα στηλη Net Force , οπου ειναι η Force μειον το body weight * g
+    df['Net_Force'] = df['Force'] - ( url_list[0]['weight'] * g )
+
     if url_list[0]['type_of_trial'] == "DJ":
         for i in range(len(df.index)):
             if df.loc[i,'Force'] > 27:
@@ -317,57 +316,45 @@ if url_list:
                 landing_time = i
                 break
         
-
-        drop_height = 0.25
-        velocity_landing =  - ( 2 * g * drop_height ) * (1/2)
-        
-        force_empty = (df.loc[0:300, 'Force']).mean()
-        
-        st.write('force_empty * g * 1.05', force_empty * g * 1.05)
-        
-        df['Force_plin_body_g'] = df['Force'] - url_list[0]['weight'] * g
-        df['Force_plin_body_g']
+        # Βρισκω Velocity Landing
+        velocity_landing =  - ( 2 * g * url_list[0]['drop_height'] ) * (1/2)
+        # Βρισκω Force Empty
+        force_empty = (df.loc[0:600, 'Force']).mean()
+                
+        # Αλγοριθμος για να βρω την ταχυτητα
         for i in range (0,len(df)):
             if df.loc[i, 'Force'] < force_empty * g * 1.05 :
                 df.loc[i,'Velocity'] = velocity_landing
             
-            if df.loc[i, 'Force'] > force_empty * g * 1.05 and df.loc[i, 'Force'] < url_list[0]['weight'] * g :
-                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Force_plin_body_g'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
+            if df.loc[i, 'Force'] >= force_empty * g * 1.05 and df.loc[i, 'Force'] <= url_list[0]['weight'] * g :
+                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
 
             if df.loc[i, 'Force'] > url_list[0]['weight'] * g :
-                df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Force_plin_body_g'].mean() * 0.01 / ( url_list[0]['weight'] * g )
+                df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 / ( url_list[0]['weight'] * g )
         
-        
+        # Βρισκω την πρωτη φορα κοντα στο μηδεν ταχυτητα
         closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
         #closest_to_zero_force = df.loc[start_try_time:len(df),'Force'].sub(0).abs().idxmin()
 
+        # Βρισκω το Net Impluse, Απο το διαστημα 1ης φορας ταχυτητας μηδεν μεχρι 1ης φορας δυναμης μηδεν, βρισκω μεσο ορο των τιμων της στηλης Net Force
+        net_impluse = df.loc[closest_to_zero_velocity:take_off_time, 'Net_Force'].mean()
+        # Βρισκω την διαφορα χρονου 1η φορα δυναμη μηδεν πλην 1η φορα ταχυτητα μηδεν
         concentric_time = take_off_time - closest_to_zero_velocity 
 
+        # Βρισκω Velocity Take off
+        velocity_take_off = (concentric_time / 1000 * net_impluse) / url_list[0]['weight']
 
-        vel_takeoff = (concentric_time / 1000 * 795) / url_list[0]['weight']
+        # Βρισκω το αλμα του DJ βασισμενο σε Velocity Take off
+        jump_depending_take_off_velocity = ( velocity_take_off ** 2 ) / ( 2 * g ) 
+        jump_depending_take_off_velocity
+        net_impluse
 
+        # Βρισκω μια νεα μεταβλητη την contact time , απο την ωρα που πατα πλατφορμα μεχρι την ωρα που ξεπατα
+        contact_time = take_off_time - start_try_time
 
-        jump = vel_takeoff ** 2 / 2 * g
+        st.write("Velocity Take Off from time take of ",df.loc[take_off_time, 'Velocity'])
+        st.write("Velocity Take Off from equation ", velocity_take_off)
 
-        st.write('force empty',force_empty)
-        st.write('closest_to_zero_velocity',closest_to_zero_velocity)
-        st.write('take_off_time',take_off_time)
-        st.write('time', concentric_time)
-        st.write('velocit take off', vel_takeoff)
-        st.write('velocity take off apo stilh', df.loc[take_off_time, 'Velocity'])
-
-        st.write('alma',jump)
-        st.write('landing velocity', velocity_landing)
-        
-
-
-
-        # df.loc[start_try_time:len(df), 'Acceleration'] = (df.loc[start_try_time:len(df), 'Force'] / url_list[0]['weight']) - 9.81
-        # df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
-        # df['Velocity'] = df.Start_Velocity.rolling(window=99999,min_periods=1).sum()
-
-        df.loc[take_off_time, 'Velocity']
-    
     with st.expander(("Graph"), expanded=True):
         #### CREATE THE MAIN CHART #####
         fig = go.Figure()
@@ -621,7 +608,7 @@ if url_list:
     
     # Find the Jump depending on time in Air for DJ Trial:
     if url_list[0]['type_of_trial'] == "DJ":
-        jump_depending_take_off_velocity = (df.loc[take_off_time, 'Velocity'] ** 2) / (2 * 9.81)
+        #jump_depending_take_off_velocity = (df.loc[take_off_time, 'Velocity'] ** 2) / (2 * 9.81)
         jump_depending_time_in_air = (1 / 2) * 9.81 * (((landing_time - take_off_time) / 1000 ) / 2 ) ** 2 
         rsi = jump_depending_time_in_air / ((take_off_time - start_try_time) / 1000 )
     
@@ -852,6 +839,28 @@ if url_list:
                     'Force Max (N)' : [max(df_brushed['Force'])],  
                     'RFD Total ' + str(from_time_rfd_iso) + ' - ' + str(till_time_rfd_iso) : [b_rfd1_whole]                
                     }
+        if url_list[0]['type_of_trial'] == 'DJ':
+            specific_metrics = {#'Unit': ['results'],
+                    'Fullname' : url_list[0]['fullname'],
+                    'Occupy' : url_list[0]['occupy'],
+                    'Type of try' : url_list[0]['type_of_trial'],
+                    'Filename' : url_list[0]['filename'],
+                    'Body Mass (kg)': url_list[0]['weight'],
+                    'Jump (m/s)' : [jump_depending_take_off_velocity],
+                    'Drop Height (m)' : [url_list[0]['drop_height']],
+                    'RSI m/s' : [rsi],
+                    'Contact Time ms' : [contact_time],
+                    'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
+                    'RMS 1 Norm' : [rms_1_normalized],
+                    'RMS 2 Mean' : [df_brushed['RMS_2'].mean()],
+                    'RMS 2 Norm' : [rms_2_normalized] if rms_2_normalized is not None else {},
+                    'RMS 3 Mean' : [df_brushed['RMS_3'].mean()],
+                    'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
+                    'Force Mean (N)' : [df_brushed['Force'].mean()],
+                    'Force Max (N)' : [max(df_brushed['Force'])],  
+                    'RFD Total ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
+                    }
+
         else:
             specific_metrics = {#'Unit': ['results'],
                     'Fullname' : url_list[0]['fullname'],
@@ -896,12 +905,12 @@ if url_list:
                                         data=df_xlsx ,
                                         file_name= url_list[0]['filename'] + '_.xlsx')
 
-        st.download_button(
-            label="Export Final Results",
-            data=final_results_df.to_csv(),
-            file_name=url_list[0]['filename'] +'_final_results.csv',
-            mime='text/csv',
-                )
+        # st.download_button(
+        #     label="Export Final Results",
+        #     data=final_results_df.to_csv(),
+        #     file_name=url_list[0]['filename'] +'_final_results.csv',
+        #     mime='text/csv',
+        #         )
 
         with st.form("Insert results to Database:"):   
             verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
@@ -973,17 +982,25 @@ if url_list:
     #Values Sidebar
     
     with st.sidebar.expander(("Information about the Trial"), expanded=True):
-        st.write('**Name**:', url_list[0]['fullname'])
-        st.write('**Age**:', url_list[0]['age'])
+        st.write('**Name** :', url_list[0]['fullname'])
+        st.write('**Age** :', url_list[0]['age'])
         st.write('**Height**:', url_list[0]['height'])
         st.write('**Body mass is**:', round(url_list[0]['weight'],4), 'kg')
         st.write('**Type of try**:', url_list[0]['type_of_trial'])
+        if url_list[0]['type_of_trial'] == "DJ":
+            st.write('**Jump :**', round(jump_depending_take_off_velocity,4))
+            st.write('**Drop Height :**', url_list[0]['drop_height'])
+
         st.write('**File Name**:', url_list[0]['filename'])
         st.write('**Occupy:**', url_list[0]['occupy'])
-        st.write('**Jump:**', jump_depending_impluse)
+        
+        
         if url_list[0]['type_of_trial'] == "CMJ":
+            st.write('**Jump:**', jump_depending_impluse)
             st.write('**Start Trial starts at**:', start_try_time, 'ms')
             st.write('**Take Off Time starts at**:', take_off_time, 'ms')
             st.write('**Landing Time at**:', landing_time, 'ms')
+        
+       
         
             

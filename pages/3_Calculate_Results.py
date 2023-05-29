@@ -80,7 +80,7 @@ with st.expander("List of all entries from the database.", expanded=True):
         df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
         with col2:
-            type_of_trial_search = st.selectbox("Επέλεξε ίδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO"))
+            type_of_trial_search = st.selectbox("Επέλεξε ίδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO", "SJ"))
         with col3:
             occupy_search = st.text_input("Occupy:")
         with col1:
@@ -317,20 +317,26 @@ if url_list:
                 break
         
         # Βρισκω Velocity Landing
-        velocity_landing =  - ( 2 * g * url_list[0]['drop_height'] ) * (1/2)
-        # Βρισκω Force Empty
-        force_empty = (df.loc[0:600, 'Force']).mean()
+        velocity_landing =  - ( 2 * g * url_list[0]['drop_height'] ) ** (1/2)
+        
+        # Βρισκω Force Empty, μεσος ορος καποιων τιμωςν της δυναμης
+        force_empty = (df.loc[0:300, 'Force']).mean()
                 
         # Αλγοριθμος για να βρω την ταχυτητα
         for i in range (0,len(df)):
             if df.loc[i, 'Force'] < force_empty * g * 1.05 :
                 df.loc[i,'Velocity'] = velocity_landing
             
-            if df.loc[i, 'Force'] >= force_empty * g * 1.05 and df.loc[i, 'Force'] <= url_list[0]['weight'] * g :
-                df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
+            # if df.loc[i, 'Force'] >= force_empty * g * 1.05 and df.loc[i, 'Force'] <= url_list[0]['weight'] * g :
+            #     df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
 
-            if df.loc[i, 'Force'] > url_list[0]['weight'] * g :
+            else :
                 df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 / ( url_list[0]['weight'] * g )
+
+        # st.write("force_empty * 9.81 * 1.05",force_empty * 9.81 * 1.05)
+        # st.write("df.loc[3000, 'Force']", df.loc[3000, 'Force'])
+        # st.write("velocity landing",velocity_landing)
+        # st.write("url_list[0]['weight'] * g ",url_list[0]['weight'] * g )
         
         # Βρισκω την πρωτη φορα κοντα στο μηδεν ταχυτητα
         closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
@@ -338,9 +344,10 @@ if url_list:
 
         # Βρισκω το Net Impluse, Απο το διαστημα 1ης φορας ταχυτητας μηδεν μεχρι 1ης φορας δυναμης μηδεν, βρισκω μεσο ορο των τιμων της στηλης Net Force
         net_impluse = df.loc[closest_to_zero_velocity:take_off_time, 'Net_Force'].mean()
+        st.write('net_impluse',net_impluse)
         # Βρισκω την διαφορα χρονου 1η φορα δυναμη μηδεν πλην 1η φορα ταχυτητα μηδεν
         concentric_time = take_off_time - closest_to_zero_velocity 
-
+        closest_to_zero_velocity
         # Βρισκω Velocity Take off
         velocity_take_off = (concentric_time / 1000 * net_impluse) / url_list[0]['weight']
 
@@ -827,8 +834,8 @@ if url_list:
                     'Type of try' : url_list[0]['type_of_trial'],
                     'Filename' : url_list[0]['filename'],
                     'Body Mass (kg)': url_list[0]['weight'],
-                    'Jump (m/s)' : [jump_depending_impluse],
-                    'RSI m/s' : [rsi],
+                    #'Jump (m/s)' : [jump_depending_impluse],
+                    #'RSI m/s' : [rsi],
                     'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
                     'RMS 1 Norm' : [rms_1_normalized],
                     'RMS 2 Mean' : [df_brushed['RMS_2'].mean()],
@@ -839,7 +846,7 @@ if url_list:
                     'Force Max (N)' : [max(df_brushed['Force'])],  
                     'RFD Total ' + str(from_time_rfd_iso) + ' - ' + str(till_time_rfd_iso) : [b_rfd1_whole]                
                     }
-        if url_list[0]['type_of_trial'] == 'DJ':
+        elif url_list[0]['type_of_trial'] == 'DJ':
             specific_metrics = {#'Unit': ['results'],
                     'Fullname' : url_list[0]['fullname'],
                     'Occupy' : url_list[0]['occupy'],

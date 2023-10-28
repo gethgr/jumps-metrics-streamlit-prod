@@ -1,3 +1,4 @@
+####----IMPORT PACKAGES----#####
 import os
 import streamlit as st
 import pandas as pd
@@ -9,10 +10,8 @@ import plotly.graph_objects as go
 import sympy as sy
 from io import BytesIO
 from pyxlsb import open_workbook as open_xlsb
-
 # biosignalsnotebooks own package for loading and plotting the acquired data
 import biosignalsnotebooks as bsnb
-
 # Scientific packages
 from numpy import arange, sin, pi
 from numpy.random import randn
@@ -27,7 +26,9 @@ st.set_page_config(
 
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton
+# set the variable g:
 g = 9.81
+# create the connection with supabase database:
 def init_connection():
     url = st.secrets["supabase_url"]
     key = st.secrets["supabase_key"]
@@ -35,6 +36,7 @@ def init_connection():
     return create_client(url, key)
 con = init_connection()
 
+#########################----SIDEBAR------##########################
 st.title("Calculate Results")
 with st.sidebar.expander("DELETE USER", expanded=False):
     st.error("Warning this is pernament")
@@ -57,25 +59,24 @@ with st.sidebar.expander("DELETE USER", expanded=False):
             st.success('Thank you! This entry has been deleted from database!')
         else:
             st.warning("There is no entry with this id to delete!")
+#########################----END OF SIDEBAR------##########################
 
-
+#########################----MAIN AREA------##########################
 # Fetch and display the whole table with entries:
 url_list=[]
+# Get all the trials from table, create a dataframe and display it:
 with st.expander("List of all entries from the database.", expanded=True):
     st.caption("Use the below search fields to filter the datatable!")
-    #uploaded_file = st.file_uploader("Choose a file1")
     #@st.experimental_memo(ttl=300)
+    # function: query to get the data of table:
     def select_all_from_jumps_table():
         query=con.table("jumps_table").select("*").execute()
         return query
     query = select_all_from_jumps_table()
-
-
+    # dataframe with the results of table (query):
     df_jumps_table = pd.DataFrame(query.data)
     fullname_search = " "
-
-
-
+    # create search fields to search on the dataframe:
     if not df_jumps_table.empty:
         df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
@@ -85,14 +86,9 @@ with st.expander("List of all entries from the database.", expanded=True):
             occupy_search = st.text_input("Occupy:")
         with col1:
             unique_fullnames = df_jumps_table['Fullname'].unique()
-            #st.write(df_jumps_table['Fullname'].unique())
             options =[" "] + [unique_fullnames[i] for i in range (0, len(unique_fullnames)) ]
-            #i = df_jumps_table.loc[i,['Fullname']]]
-
             fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
-        
-        
-
+        # conditions depending on searches input fields:
         if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
             st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False))
         
@@ -116,12 +112,6 @@ with st.expander("List of all entries from the database.", expanded=True):
         
         elif fullname_search and occupy_search and type_of_trial_search:
             df_jumps_table[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)]
-
-        #url_id_number_input = st.number_input("Type the ID of the person you want to calculate results of the current trial.",value=0,step=1)
-
-
-        # In this form, you type the id of the person to calculate speicific trial.
-        
     else:
         st.write("There are no entries in the database! Please insert first!")
 
@@ -144,15 +134,14 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
             st.write("There is no entry with this ID")
 
 
-#@st.cache(allow_output_mutation=True)
+# main function to get all the data from trial-file, depending on the id of the user:
 def get_data():
     if url_list:
         storage_options = {'User-Agent': 'Mozilla/5.0'}
         df = pd.read_csv(url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
-        # #Define Header columns
+        # Define Header columns:
         columns_count = len(df.axes[1])
-        
-        #Define next columns 
+        # Define next columns: 
         df['pre_pro_signal_EMG_1'] = 0
         df['pre_pro_signal_EMG_2'] = 0
         df['pre_pro_signal_EMG_3'] = 0
@@ -166,25 +155,18 @@ def get_data():
         low_cutoff = 10 # Hz
         high_cutoff = 450 # Hz
         frequency = 1000
-
-        #pm = df['Mass_Sum'].mean()
-
         # Calculate The Column Force
         df['Force'] = df['Mass_Sum'] * 9.81
-
         #IF type_of_trial = ISO , αφαιρεσε το σωματικο βαρος.
         if url_list[0]['type_of_trial'] == "ISO":
             df['Force'] = df['Force'] - url_list[0]['weight'] * 9.81
-
         # Calculate Acceleration, Velocity for CMJ and SJ Trials:
         if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ":
             df['Acceleration'] = (df['Force'] / url_list[0]['weight']) - 9.81
             df['Start_Velocity'] = df.Acceleration.rolling(window=2,min_periods=1).mean()*0.001
             df['Velocity'] = df.Start_Velocity.rolling(window=999999,min_periods=1).sum()
 
-           # gia to 6o deuterolepto , vriskw thn mesh timh tou 5o k 6o sthn epitaxinsi kai to prosthetw sthn taxitita tou 5ou 
-
-        # THIS IS ALL FOR EMG TO RMS 1
+        #####------THIS IS ALL FOR EMG TO RMS 1------########
         if 'Col_9' in df.columns:
             # [Baseline Removal] Convert Raw Data EMG to EMG
             df['Col_9_to_converted'] = (((df['Col_9']/ 2 ** 16) - 1/2 ) * 3 ) / 1000
@@ -196,7 +178,7 @@ def get_data():
             #This is RMS per 100
             df['RMS_1'] = df.pre_pro_signal_EMG_1.rolling(window=100,min_periods=100).mean()**(1/2)
         
-        # THIS IS ALL FOR EMG TO RMS 2
+        ######------THIS IS ALL FOR EMG TO RMS 2------##########
         if 'Col_10' in df.columns: 
             df['Col_10_to_converted'] = (((df['Col_10']/ 2 ** 16) - 1/2 ) * 3 ) / 1000
             df['Col_10_to_converted'] = df['Col_10_to_converted'] *1000
@@ -207,7 +189,7 @@ def get_data():
             #This is RMS per 100
             df['RMS_2'] = df.pre_pro_signal_EMG_2.rolling(window=100,min_periods=100).mean()**(1/2)
 
-        # THIS IS ALL FOR EMG TO RMS 3
+        #######-----THIS IS ALL FOR EMG TO RMS 3-----#########
         if 'Col_11' in df.columns:
             df['Col_11_to_converted'] = (((df['Col_11']/ 2 ** 16) - 1/2 ) * 3 ) / 1000
             df['Col_11_to_converted'] = df['Col_11_to_converted'] *1000
@@ -227,20 +209,13 @@ def get_data():
 
 if url_list:
     df = get_data()
-
     #Find standard deviation
-
     for i in range(0,450):
          xi_xmean = (((df.loc[i, 'Force'] - df.loc[1:450,'Force'].mean()))*2)
-
     xi_xmean_sum = xi_xmean.sum()
-    
     std = ( ( xi_xmean_sum ** 2 ) / ( 2000 -1 ) ) * ( 1 / 2)
-    #st.write(std)
-    #5*std
-    #rsi = float("nan")
-    #df.loc[1559,'Force']
-    ####### ###### ##### FIND TIMES FOR CMJ TRIAL ####### ######### #######
+    
+    ######------FIND TIMES FOR CMJ TRIAL--------#######
     if url_list[0]['type_of_trial'] == "CMJ":
         # Find Take Off Time: 
         for i in range (0, len(df.index)):
@@ -281,7 +256,10 @@ if url_list:
         # st.write("Velocity take off", df.loc[take_off_time, 'Velocity'])
         # NJump = (df.loc[Ntake_off_time, 'NVelocity'] ** 2) / (2 * 9.81)
         # st.write("ALMA", NJump)
-    ####### ###### ##### FIND TIMES FOR SJ TRIAL ####### ######### #######
+    ######------END OF FIND TIMES FOR CMJ TRIAL--------#######
+
+
+    #######--------FIND TIMES FOR SJ TRIAL------#######
     if url_list[0]['type_of_trial'] == "SJ":
         for i in range (0, len(df.index)):
             if df.loc[i,'Force'] < 2:
@@ -296,12 +274,12 @@ if url_list:
             if df.loc[i,'Force'] > (df.loc[10,'Force'] + 30):
                 start_try_time = i
                 break
+    #######--------END OF FIND TIMES FOR SJ TRIAL------#######
 
-    ####### ###### ##### FIND TIMES FOR DJ TRIAL ####### ######### #######
 
-    # Φτιαχνω νεα στηλη Net Force , οπου ειναι η Force μειον το body weight * g
+    #######--------FIND TIMES FOR DJ TRIAL--------########
+    # create new column (Net Force), which is Force meion body weight * g:
     df['Net_Force'] = df['Force'] - ( url_list[0]['weight'] * g )
-
     if url_list[0]['type_of_trial'] == "DJ":
         for i in range(len(df.index)):
             if df.loc[i,'Force'] > 27:
@@ -315,21 +293,20 @@ if url_list:
             if df.loc[i,'Force'] > 35:
                 landing_time = i
                 break
-        
-        # Βρισκω Velocity Landing
+    #######--------END OF FIND TIMES FOR DJ TRIAL--------########
+
+
+        # calculate velocity landing:
         velocity_landing =  - ( 2 * g * url_list[0]['drop_height'] ) ** (1/2)
-        
-        # Βρισκω Force Empty, μεσος ορος καποιων τιμωςν της δυναμης
-        force_empty = (df.loc[0:300, 'Force']).mean()
-                
-        # Αλγοριθμος για να βρω την ταχυτητα
+        # calculate force_empty which is the mean of some initial force values:
+        force_empty = (df.loc[0:300, 'Force']).mean()     
+        # algorithm to find the velocity: Αλγοριθμος για να βρω την ταχυτητα
         for i in range (0,len(df)):
             if df.loc[i, 'Force'] < force_empty * g * 1.05 :
                 df.loc[i,'Velocity'] = velocity_landing
             
             # if df.loc[i, 'Force'] >= force_empty * g * 1.05 and df.loc[i, 'Force'] <= url_list[0]['weight'] * g :
             #     df.loc[i, 'Velocity'] = velocity_landing + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 /  ( url_list[0]['weight'] * g )
-
             else :
                 df.loc[i, 'Velocity'] = df.loc[i-1, 'Velocity'] + df.loc[i-1:i, 'Net_Force'].mean() * 0.01 / ( url_list[0]['weight'] * g )
 
@@ -350,20 +327,18 @@ if url_list:
         closest_to_zero_velocity
         # Βρισκω Velocity Take off
         velocity_take_off = (concentric_time / 1000 * net_impluse) / url_list[0]['weight']
-
         # Βρισκω το αλμα του DJ βασισμενο σε Velocity Take off
         jump_depending_take_off_velocity = ( velocity_take_off ** 2 ) / ( 2 * g ) 
         jump_depending_take_off_velocity
         net_impluse
-
-        # Βρισκω μια νεα μεταβλητη την contact time , απο την ωρα που πατα πλατφορμα μεχρι την ωρα που ξεπατα
+        # calculate one new variable (contact_time), which is from the time the user steps on the platform until the time he does not:
         contact_time = take_off_time - start_try_time
 
         st.write("Velocity Take Off from time take of ",df.loc[take_off_time, 'Velocity'])
         st.write("Velocity Take Off from equation ", velocity_take_off)
 
+    ##############------------CREATE THE CHART------------##################
     with st.expander(("Graph"), expanded=True):
-        #### CREATE THE MAIN CHART #####
         fig = go.Figure()
         lines_to_hide = ["RMS_1","RMS_2","RMS_3"]
         # add x and y values for the 1st scatter
@@ -373,7 +348,6 @@ if url_list:
             y=df['Force'],
             name="Force",
             line=dict(color="#290baf")
-            
         ))
         # add x and y values for the 2nd scatter
         # plot and name the yaxis as yaxis2 values
@@ -384,7 +358,6 @@ if url_list:
             yaxis="y2",
             line=dict(color="#aa0022")
         ))
-        
         # add x and y values for the 3rd scatter
         # plot and name the yaxis as yaxis3 values
         fig.add_trace(go.Scatter(
@@ -436,9 +409,7 @@ if url_list:
                 spikethickness=2,
                 spikedash="dot",
                 spikecolor="#999999",
-                spikemode="toaxis",
-                
-                #spikemode= 'toaxis' #// or 'across' or 'marker'      
+                spikemode="toaxis",                
             ),
             # pass the y-axis title, titlefont, color
             # and tickfont as a dictionary and store
@@ -457,7 +428,6 @@ if url_list:
                 spikedash="dot",
                 spikecolor="#999999",
                 spikemode="toaxis",
-                
             ),
             # pass the y-axis 2 title, titlefont, color and
             # tickfont as a dictionary and store it an
@@ -481,9 +451,6 @@ if url_list:
                 # spikedash="dot",
                 # spikecolor="#999999",
                 # spikemode="toaxis",
-
-                
-                
             ),
             # pass the y-axis 3 title, titlefont, color and
             # tickfont as a dictionary and store it an
@@ -501,7 +468,6 @@ if url_list:
                 side="right" # specifying the side the axis should be present
                 #position=0.85
             ),
-            
             # pass the y-axis 4 title, titlefont, color and
             # tickfont as a dictionary and store it an
             # variable yaxis 4
@@ -537,24 +503,20 @@ if url_list:
         # as shown
         large_rockwell_template = dict(
             layout=go.Layout(title_font=dict(family="Rockwell", size=24))
-        )
-        
-        #     #template=large_rockwell_template
-        #     # barmode='group',
-        #     #hovermode='x',#paper_bgcolor="LightSteelBlue"   
-        # )
-        
+        )  
         fig.update_xaxes(
             
             rangeslider_visible=True,
-            
         )
         # This is to hide by default some line
         fig.for_each_trace(lambda trace: trace.update(visible="legendonly") 
                         if trace.name in lines_to_hide else ())
         st.plotly_chart(fig,use_container_width=True)
+    
+    ##############---------------END OF CREATE THE CHART--------------##################
 
-    ###### ##### ##### DISPLAY Important Times of the graph: ##### ###### ######
+    #############----------DISPLAY IMPORTANT TIMES FROM THE CHART---------###############
+    # for non ISO trials:
     if url_list[0]['type_of_trial'] != 'ISO':
         st.write("#")
         st.write("**Helpfull information about the times of the graph after the start!:**")
@@ -574,8 +536,11 @@ if url_list:
     with c3:
         if url_list[0]['type_of_trial'] == 'CMJ' or url_list[0]['type_of_trial'] == 'SJ' or url_list[0]['type_of_trial'] == 'DJ':
             st.write(" Landing Time is at:", landing_time)
+    ###########--------END OF DISPLAY IMPORTANT TIMES FROM THE CHART---------############
     
-    ###### ###### ###### SELECT TIME PERIOD OF DATASET #### ###### ###### ######## #####
+
+
+    ##########-------------SELECT TIME PERIOD OF DATASET------------##############
     col1, col2 = st.columns(2)
     r=0  
     with st.form("Form for times",clear_on_submit = False):
@@ -625,7 +590,7 @@ if url_list:
     if "load_state" not in st.session_state:
         st.session_state.load_state = False
 
-    ######### ###### ######### ######## BRUSHED AREA ########### ########## ###########
+    #####################-----------------BRUSHED AREA-------------------#########################
     if brushed_submitted or st.session_state.load_state:
         st.session_state.load_state = True
 
@@ -758,8 +723,7 @@ if url_list:
         #     emg_df3_length = len(emg_df3)
         #     emg_df3.loc[emg_df3_length] = to_append
 
-
-        ############ ########### DIPLAY SPECIFIC CALCULATIONS ON BRUSHED AREA CMS , SJ , DJ ######## ######### ############
+        ########------DIPLAY SPECIFIC CALCULATIONS ON BRUSHED AREA CMS, SJ, DJ----#######
         rms_1_normalized = float("nan")
         rms_2_normalized = float("nan")
         rms_3_normalized = float("nan")
@@ -776,7 +740,6 @@ if url_list:
                         st.write('Force-Mean:', round(df_brushed["Force"].mean(),4))
                         st.write('Force-Min:', round(min(df_brushed['Force']),4))
                         st.write('Force-Max:', round(max(df_brushed['Force']),4))
-
             with col3:
                     if url_list[0]['type_of_trial'] == "ISO":
                         st.write('RMS_1_ISO-Mean:', round(df_brushed["RMS_1"].mean(),4))
@@ -809,7 +772,7 @@ if url_list:
                         st.write('Jump (Time in Air):', round(jump_depending_time_in_air,4))
                         st.write('RSI:', round(rsi,4))
                         
-        #Display Dataframe in Datatable
+        # Display Dataframe in Datatable:
         if url_list[0]['type_of_trial'] != "ISO":
             with st.expander("Show Data Table", expanded=True):
                 selected_filtered_columns = st.multiselect(
@@ -822,8 +785,9 @@ if url_list:
                     file_name=url_list[0]['filename'] +'.csv',
                     mime='text/csv',
                 )
+        ##########--------END OF DIPLAY SPECIFIC CALCULATIONS ON BRUSHED AREA CMS, SJ, DJ------########
 
-        ###### FINAL RESULTS #####
+        #########---------FINAL RESULTS-------------##############
         st.write("---")
         st.write('**Final Results Table for user : {}**'.format(url_list[0]['fullname']))
         specific_metrics = [""]
@@ -911,17 +875,11 @@ if url_list:
         st.download_button(label='Export Final Results xlsx',
                                         data=df_xlsx ,
                                         file_name= url_list[0]['filename'] + '_.xlsx')
-
-        # st.download_button(
-        #     label="Export Final Results",
-        #     data=final_results_df.to_csv(),
-        #     file_name=url_list[0]['filename'] +'_final_results.csv',
-        #     mime='text/csv',
-        #         )
-
+        #########---------END OF FINAL RESULTS-------------##############
+        
+        #########---------INSERT RESULTS TO DATABASE-------##############
         with st.form("Insert results to Database:"):   
             verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
-
             submitted_button_insert_final_results = st.form_submit_button("Insert Results")
         
         if submitted_button_insert_final_results:
@@ -939,8 +897,8 @@ if url_list:
                 # After Export , try to insert these values to statistics table      
                 def add_entries_to_jumps_statistics_table(supabase):
                         value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), 'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
-                                'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
+                                'jump': round(jump_depending_impluse,4), 'force_mean': round(df_brushed['Force'].mean(),4), 'force_max': round(max(df_brushed['Force']),4)} #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                               # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
                         data = supabase.table('jumps_statistics_table').insert(value).execute()
                 def main():
                     new_entry = add_entries_to_jumps_statistics_table(con)
@@ -953,10 +911,11 @@ if url_list:
                 query = select_all_from_jumps_statistics_table()
                 df_jumps_statistics_table = pd.DataFrame(query.data)
                 st.write("The datatable with Final Results:", df_jumps_statistics_table)
+            #########---------END OF INSERT RESULTS TO DATABASE-------##############
+    ################---------------END OF BRUSHED AREA----------------####################
 
 
-
-    ##################### ################### UN BRUSHED AREA ##################### ######################## ###################
+    ################---------------UN BRUSHED AREA--------------------####################
     else:
         with st.expander("Show Specific Calculations", expanded=True):
             st.caption("Whole Time Period")
@@ -986,8 +945,9 @@ if url_list:
                 file_name=url_list[0]['filename'] + '.csv',
                 mime='text/csv',
             )
-    #Values Sidebar
-    
+    #############------------END OF UN BRUSHED AREA-------------##################
+
+    #######----DISPLAY SOME VALUES ON SIDEBAR------########
     with st.sidebar.expander(("Information about the Trial"), expanded=True):
         st.write('**Name** :', url_list[0]['fullname'])
         st.write('**Age** :', url_list[0]['age'])
@@ -1007,7 +967,9 @@ if url_list:
             st.write('**Start Trial starts at**:', start_try_time, 'ms')
             st.write('**Take Off Time starts at**:', take_off_time, 'ms')
             st.write('**Landing Time at**:', landing_time, 'ms')
-        
+    #######------END OF DISPLAY SOME VALUES ON SIDEBAR------#########
+
+#########################------------END OF MAIN AREA------------##########################
        
         
             

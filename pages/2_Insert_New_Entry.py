@@ -44,8 +44,9 @@ query = select_all_from_jumps_table()
 
 df_jumps_table = pd.DataFrame(query.data)
 df_jumps_table_unique_values = df_jumps_table.drop_duplicates(subset = ["fullname"])
+#df_jumps_table_unique_values = df_jumps_table["fullname"].unique()
 
-df_jumps_table_unique_values = df_jumps_table_unique_values.shift()
+#df_jumps_table_unique_values = df_jumps_table_unique_values.shift()
 df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0, '-', float("Nan")]
 
 st.write("**Select a person from the database or fill in the fields below.**")

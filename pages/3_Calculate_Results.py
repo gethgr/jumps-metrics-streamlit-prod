@@ -892,7 +892,6 @@ if url_list:
             if query.data:
                 st.warning("This entry with this id allready exists in table")
             else:
-                st.write("Mpika Else", url_id_number_input)
                 # After Export , try to insert these values to statistics table      
                 def add_entries_to_jumps_statistics_table(supabase):
                         value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\

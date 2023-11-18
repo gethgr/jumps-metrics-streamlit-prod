@@ -674,13 +674,13 @@ if url_list:
         # IF TRIAL IS NOT ISO:
         # emg_df1=pd.DataFrame() # emg_df2=pd.DataFrame() # emg_df3=pd.DataFrame()
         else:
-            for i in range(int(user_time_input_rfd_from_time),int(user_time_input_rfd_till_time+1),50):  
+            for i in range(int(user_time_input_rfd_from_time+50),int(user_time_input_rfd_till_time+1),50):  
 
                 ###### FIND RFD on selected time period ######
                 X = df.loc[user_time_input_rfd_from_time:i:1,'Rows_Count'] - df.loc[user_time_input_rfd_from_time:i:1,'Rows_Count'].mean()
                 Y = df.loc[user_time_input_rfd_from_time:i:1,'Force'] - df.loc[user_time_input_rfd_from_time:i:1,'Force'].mean()
                 b_rfd1 = (X*Y).sum() / (X ** 2).sum()
-                headers_list_rfd1.append("RFD " + str(user_time_input_rfd_from_time) + " - " + str((k+user_time_input_rfd_from_time)))
+                headers_list_rfd1.append("RFD " + str(user_time_input_rfd_from_time) + " - " + str((k+user_time_input_rfd_from_time+50)))
                 k += 50
                 l_rfd1.append(b_rfd1)
                 
@@ -915,10 +915,13 @@ if url_list:
                         value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\
                                  "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
                                  'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4),  'force_sum' : round(df_brushed['Force'].sum(),4),
+                                'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4), 
+                                'force_sum' : round(df_brushed['Force'].sum(),4),
                                 'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
                                 'force_max': round(max(df_brushed['Force']),4), 'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
-                                'user_time_input_max_jumps_table': user_time_input_max_jumps_table, 'landing_time': landing_time
+                                'user_time_input_max_jumps_table': user_time_input_max_jumps_table,
+                                'user_time_input_start_try_time' : user_time_input_start_try_time, 'user_time_input_rfd_from_time' : user_time_input_rfd_from_time,
+                                'user_time_input_rfd_till_time' : user_time_input_rfd_till_time,  'landing_time': landing_time
                                 }
                                  
                                  #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 

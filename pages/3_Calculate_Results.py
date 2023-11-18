@@ -900,7 +900,8 @@ if url_list:
                                  'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
                                 'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4),  'force_sum' : round(df_brushed['Force'].sum(),4),
                                 'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
-                                'force_max': round(max(df_brushed['Force']),4), 'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
+                                'force_max': round(max(df_brushed['Force']),4),'user_time_input_start_try_time' : user_time_input_start_try_time, 
+                                'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
                                 'user_time_input_max_jumps_table': user_time_input_max_jumps_table, 'landing_time': landing_time
                                 }
                                  

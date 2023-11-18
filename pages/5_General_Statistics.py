@@ -39,7 +39,7 @@ st.markdown("### Dashboard I")
 # top-level filters
 columns = [" "] + [df.columns[i] for i in range (0, len(df.columns))]
 options = (" ", "CMJ", "DJ", "ISO", "SJ")
-jump_trial_filter = st.selectbox("**Select the type of the jump:**", options)
+jump_trial_filter = st.selectbox("Select the type of the trial:", options)
 
 # creating a single-element container
 placeholder = st.empty()

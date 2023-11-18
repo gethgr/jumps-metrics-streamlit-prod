@@ -90,31 +90,23 @@ with st.expander("List of all entries from the database.", expanded=True):
             fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
         # conditions depending on searches input fields:
         if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
-            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False))
-        
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False), use_container_width=True)
         elif fullname_search and not occupy_search and type_of_trial_search == " ":
-            st.dataframe(df_jumps_table[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
-
-        elif occupy_search and not fullname_search and not type_of_trial_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Occupy']== occupy_search], use_container_width=True)
-
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
+        elif occupy_search and fullname_search == " " and type_of_trial_search == " ":
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[df_jumps_table['Occupy']== occupy_search], use_container_width=True)
         elif type_of_trial_search and fullname_search == " " and not occupy_search:
-            st.dataframe(df_jumps_table[df_jumps_table['Type of Trial']== type_of_trial_search])
-
-        elif fullname_search and occupy_search and not type_of_trial_search:
-            df_jumps_table[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Occupy'] == occupy_search)]
-
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[df_jumps_table['Type of Trial']== type_of_trial_search], use_container_width=True)
+        elif fullname_search and occupy_search and type_of_trial_search == " ":
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Occupy'] == occupy_search)], use_container_width=True)
         elif fullname_search and type_of_trial_search and not occupy_search:
-            df_jumps_table[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)]
-        
-        elif occupy_search and type_of_trial_search:
-            df_jumps_table[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)]
-        
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[(df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)], use_container_width=True)
+        elif occupy_search and type_of_trial_search and fullname_search == " ":
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)], use_container_width=True)
         elif fullname_search and occupy_search and type_of_trial_search:
-            df_jumps_table[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)]
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)], use_container_width=True)        
     else:
         st.write("There are no entries in the database! Please insert first!")
-
 with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):   
     url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results:",value = 0,step= 1)
     id_submitted = st.form_submit_button("Calculate Results")
@@ -524,16 +516,19 @@ if url_list:
         st.write("#")
         st.write("**Input below fields to calculate results in specific time period:**")
 
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
+        if url_list[0]['type_of_trial'] == 'CMJ':
+            st.write("The trial starts at:", start_try_time)
+    with c2:
         if url_list[0]['type_of_trial'] == 'CMJ':
             st.write(" Velocity closest to zero is at:", closest_to_zero_velocity)
         if url_list[0]['type_of_trial'] == "SJ" or url_list[0]['type_of_trial'] == "DJ":
             st.write("The trial starts at:", start_try_time)
-    with c2:
+    with c3:
         if url_list[0]['type_of_trial'] == 'CMJ' or url_list[0]['type_of_trial'] == 'SJ' or url_list[0]['type_of_trial'] == 'DJ':
             st.write(" Take Off Time is at:", take_off_time)
-    with c3:
+    with c4:
         if url_list[0]['type_of_trial'] == 'CMJ' or url_list[0]['type_of_trial'] == 'SJ' or url_list[0]['type_of_trial'] == 'DJ':
             st.write(" Landing Time is at:", landing_time)
     ###########--------END OF DISPLAY IMPORTANT TIMES FROM THE CHART---------############
@@ -544,26 +539,28 @@ if url_list:
     col1, col2 = st.columns(2)
     r=0  
     with st.form("Form for times",clear_on_submit = False):
-        c1, c2, c3, c4, c5= st.columns(5)
-        with c1:        
-            user_time_input_min_jumps_table = st.number_input("From Time", value=0, step=1, help="Τhe beginning of the desired time interval.")
+        c1, c2, c3, c4, c5, c6= st.columns(6)
+        with c1: 
+            user_time_input_start_try_time = st.number_input("Start trial time", value=start_try_time, step=1, help="This is the time of the start of the trial.")
+        with c2:        
+            user_time_input_min_jumps_table = st.number_input("From Time", value=closest_to_zero_velocity, step=1, help="Τhe beginning of the desired time interval.")
 
-        with c2:
-            user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1, help="The end of the desired time interval." )#int(df.index.max()))
- 
         with c3:
+            user_time_input_max_jumps_table = st.number_input("Till Time", value=take_off_time, step=1, help="The end of the desired time interval." )#int(df.index.max()))
+ 
+        with c4:
             if url_list[0]['type_of_trial'] != "ISO":
                 rms_1_iso = st.number_input("ISO RMS 1", help="The first ISO RMS Value." )
             else:
                 from_time_rfd_iso = st.number_input("From Time for RFD", value=0, step=1, help="Τhe beginning of the desired time interval for RFD." )
             
-        with c4:
+        with c5:
             if url_list[0]['type_of_trial'] != "ISO":
                 rms_2_iso = st.number_input("ISO RMS 2", help="The second ISO RMS Value.")
             else:
                 till_time_rfd_iso = st.number_input("Till Time for RFD", value=0, step=1, help="Τhe end of the desired time interval for RFD." )
             
-        with c5:
+        with c6:
             if url_list[0]['type_of_trial'] != "ISO":
                 rms_3_iso = st.number_input("ISO RMS 3", help="The third ISO RMS Value.")
             
@@ -577,12 +574,13 @@ if url_list:
         #vertical_take_off_velocity = st.number_input("Give the time of vertical take off velocity")
         jump_depending_take_off_velocity = (df.loc[take_off_time, 'Velocity'] ** 2) / (2 * 9.81)
         jump_depending_time_in_air = (1 / 2) * 9.81 * (((landing_time - take_off_time) / 1000 ) / 2 ) ** 2 
-    
+
     # Find the Jump depending on time in Air for DJ Trial:
     if url_list[0]['type_of_trial'] == "DJ":
         #jump_depending_take_off_velocity = (df.loc[take_off_time, 'Velocity'] ** 2) / (2 * 9.81)
         jump_depending_time_in_air = (1 / 2) * 9.81 * (((landing_time - take_off_time) / 1000 ) / 2 ) ** 2 
-        rsi = jump_depending_time_in_air / ((take_off_time - start_try_time) / 1000 )
+        # rsi duration is : take_off_time - start_try_time
+        rsi = jump_depending_time_in_air / ((user_time_input_max_jumps_table - user_time_input_start_try_time) / 1000 )
     
     
 
@@ -595,7 +593,7 @@ if url_list:
         st.session_state.load_state = True
 
         df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index <= user_time_input_max_jumps_table)]
-
+        
         ######### ######## ########## FIND JUMP DEPENDING ON IMPLUSE FOR CMJ, SJ ############ ########### ############
         if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" :
             #Find the Impluse GRF:
@@ -608,7 +606,8 @@ if url_list:
             velocity_momentum1 = (impulse_grf - impulse_bw) / url_list[0]['weight']
             # Find the Jump:
             jump_depending_impluse = (velocity_momentum1 ** 2) / (9.81 * 2)
-            rsi_duration = (take_off_time - start_try_time) / 1000
+            # rsi duration is : take_off_time - start_try_time
+            rsi_duration = (user_time_input_max_jumps_table - user_time_input_start_try_time) / 1000
             rsi = jump_depending_impluse / rsi_duration
             
         ##### #### #### ##### FIND THE RFD linear igression ##### #### #### #### #####
@@ -896,8 +895,16 @@ if url_list:
                 st.write("Mpika Else", url_id_number_input)
                 # After Export , try to insert these values to statistics table      
                 def add_entries_to_jumps_statistics_table(supabase):
-                        value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] , "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'], 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), 'force_mean': round(df_brushed['Force'].mean(),4), 'force_max': round(max(df_brushed['Force']),4)} #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                        value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\
+                                 "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
+                                 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
+                                'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4),  'force_sum' : round(df_brushed['Force'].sum(),4),
+                                'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
+                                'force_max': round(max(df_brushed['Force']),4), 'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
+                                'user_time_input_max_jumps_table': user_time_input_max_jumps_table, 'landing_time': landing_time
+                                }
+                                 
+                                 #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
                                # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
                         data = supabase.table('jumps_statistics_table').insert(value).execute()
                 def main():
@@ -947,7 +954,7 @@ if url_list:
             )
     #############------------END OF UN BRUSHED AREA-------------##################
 
-    #######----DISPLAY SOME VALUES ON SIDEBAR------########
+    ##############---------------DISPLAY SOME VALUES ON SIDEBAR------################
     with st.sidebar.expander(("Information about the Trial"), expanded=True):
         st.write('**Name** :', url_list[0]['fullname'])
         st.write('**Age** :', url_list[0]['age'])

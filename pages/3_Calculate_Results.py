@@ -540,14 +540,21 @@ if url_list:
     r=0  
     with st.form("Form for times",clear_on_submit = False):
         c1, c2, c3, c4, c5, c6= st.columns(6)
-        with c1: 
-            user_time_input_start_try_time = st.number_input("Start trial time", value=start_try_time, step=1, help="This is the time of the start of the trial.")
-        with c2:        
-            user_time_input_min_jumps_table = st.number_input("From Time", value=closest_to_zero_velocity, step=1, help="Τhe beginning of the desired time interval.")
-
-        with c3:
-            user_time_input_max_jumps_table = st.number_input("Till Time", value=take_off_time, step=1, help="The end of the desired time interval." )#int(df.index.max()))
- 
+        if url_list[0]['type_of_trial'] != "ISO":
+            with c1: 
+                user_time_input_start_try_time = st.number_input("Start trial time", value=start_try_time, step=1, help="This is the time of the start of the trial.")
+        if url_list[0]['type_of_trial'] == "CMJ":
+            with c2:        
+                user_time_input_min_jumps_table = st.number_input("From Time", value=closest_to_zero_velocity, step=1, help="Τhe beginning of the desired time interval.")
+        else:
+            with c2:        
+                user_time_input_min_jumps_table = st.number_input("From Time", value=0, step=1, help="Τhe beginning of the desired time interval.")
+        if url_list[0]['type_of_trial'] == "CMJ":
+            with c3:
+                user_time_input_max_jumps_table = st.number_input("Till Time", value=take_off_time, step=1, help="The end of the desired time interval." )#int(df.index.max()))
+        else:
+            with c3:
+                user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1, help="The end of the desired time interval." )#int(df.index.max()))
         with c4:
             if url_list[0]['type_of_trial'] != "ISO":
                 rms_1_iso = st.number_input("ISO RMS 1", help="The first ISO RMS Value." )

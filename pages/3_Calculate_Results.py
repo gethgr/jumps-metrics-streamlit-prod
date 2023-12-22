@@ -225,7 +225,7 @@ if url_list:
             if df.loc[i,'Force'] < (df['Force'].mean() - 80):
                 start_try_time = i
                 break
-        closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
+        closest_to_zero_velocity = df.loc[start_try_time+50:take_off_time,'Velocity'].sub(0).abs().idxmin()
         closest_to_average_force_1st = (df.loc[start_try_time:closest_to_zero_velocity,'Force']-df['Force'].mean()).sub(0).abs().idxmin()
 
         # df1 = df.copy()
@@ -885,46 +885,49 @@ if url_list:
         
         #########---------INSERT RESULTS TO DATABASE-------##############
         with st.form("Insert results to Database:"):   
-            verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
+            verify_check_box_insert_final_results = st.text_input( "Please type Verify and press the Insert Results button to insert the final results to database")
             submitted_button_insert_final_results = st.form_submit_button("Insert Results")
         
         if submitted_button_insert_final_results:
-            # check if this id allready exists in database
-            def check_if_this_id_entry_exists(supabase):
-                query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
-                return query
-            query = check_if_this_id_entry_exists(con)
-            
-            # Check if list query.data is empty or not
-            if query.data:
-                st.warning("This entry with this id allready exists in table")
-            else:
-                # After Export , try to insert these values to statistics table      
-                def add_entries_to_jumps_statistics_table(supabase):
-                        value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\
-                                 "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
-                                 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4),  'force_sum' : round(df_brushed['Force'].sum(),4),
-                                'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
-                                'force_max': round(max(df_brushed['Force']),4),'user_time_input_start_try_time' : user_time_input_start_try_time, 
-                                'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
-                                'user_time_input_max_jumps_table': user_time_input_max_jumps_table, 'landing_time': landing_time
-                                }
-                                 
-                                 #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
-                               # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
-                        data = supabase.table('jumps_statistics_table').insert(value).execute()
-                def main():
-                    new_entry = add_entries_to_jumps_statistics_table(con)
-                main()
-                st.success('Thank you! A new entry has been inserted to database!')
-
-                def select_all_from_jumps_statistics_table():
-                    query=con.table("jumps_statistics_table").select("*").execute()
+            if verify_check_box_insert_final_results == "Verify":
+                # check if this id allready exists in database
+                def check_if_this_id_entry_exists(supabase):
+                    query=con.table("jumps_statistics_table").select("id").eq("id", url_id_number_input).execute()
                     return query
-                query = select_all_from_jumps_statistics_table()
-                df_jumps_statistics_table = pd.DataFrame(query.data)
-                st.write("The datatable with Final Results:", df_jumps_statistics_table)
+                query = check_if_this_id_entry_exists(con)
+                
+                # Check if list query.data is empty or not
+                if query.data:
+                    st.warning("This entry with this id allready exists in table")
+                else:
+                    # After Export , try to insert these values to statistics table      
+                    def add_entries_to_jumps_statistics_table(supabase):
+                            value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\
+                                    "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
+                                    'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
+                                    'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4),  'force_sum' : round(df_brushed['Force'].sum(),4),
+                                    'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
+                                    'force_max': round(max(df_brushed['Force']),4),'user_time_input_start_try_time' : user_time_input_start_try_time, 
+                                    'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
+                                    'user_time_input_max_jumps_table': user_time_input_max_jumps_table, 'landing_time': landing_time, 'rsi' : rsi
+                                    }
+                                    
+                                    #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                                # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
+                            data = supabase.table('jumps_statistics_table').insert(value).execute()
+                    def main():
+                        new_entry = add_entries_to_jumps_statistics_table(con)
+                    main()
+                    st.success('Thank you! A new entry has been inserted to database!')
+
+                    def select_all_from_jumps_statistics_table():
+                        query=con.table("jumps_statistics_table").select("*").execute()
+                        return query
+                    query = select_all_from_jumps_statistics_table()
+                    df_jumps_statistics_table = pd.DataFrame(query.data)
+                    st.write("The datatable with Final Results:", df_jumps_statistics_table)
+            else:
+                st.warning("Please type 'Verify' first to continue")
             #########---------END OF INSERT RESULTS TO DATABASE-------##############
     ################---------------END OF BRUSHED AREA----------------####################
 

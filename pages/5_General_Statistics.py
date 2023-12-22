@@ -117,36 +117,3 @@ if jump_trial_filter != " ":
 st.write("### Dashboard II")
 #st.markdown("---")
 
-col1, col2 = st.columns([1,2], gap="large")
-with col1:
-    st.markdown("Total count for each trial:")
-    fig = px.pie(df, names='type_of_trial')
-    fig.update_traces(hoverinfo='label+percent', textinfo='label+percent+value')
-    fig.update_layout(
-        #margin=dict(l=80, r=20, t=20, b=20),
-        #paper_bgcolor="LightSteelBlue",
-    )
-    st.plotly_chart(fig,use_container_width=True)  
-    
-with col2:
-    df.rename(columns = {'id' :'ID',
-                     'created_at':'Created at',
-                     'fullname':'Fullname', 
-                     'email':'Email',
-                     'occupy':'Occupy',
-                     'type_of_trial':'Type of trial',
-                     'filename':'Filename',
-                     'filepath':'Filepath',
-                     'height':'Height',
-                     'weight':'Weight',
-                     'age':'Age',
-                     'instructor':'Instructor',
-                     'drop_height':'Drop height'
-
-    }, inplace = True)
-    st.markdown("Detailed all data view:")
-    st.dataframe(df[['ID', 'Fullname','Occupy','Type of trial','Age','Height','Weight','Email','Created at']].sort_values('Created at', ascending=False), use_container_width = True)
-    
-time.sleep(1)
-
-    

@@ -207,6 +207,7 @@ if url_list:
     xi_xmean_sum = xi_xmean.sum()
     std = ( ( xi_xmean_sum ** 2 ) / ( 2000 -1 ) ) * ( 1 / 2)
     
+    
     ######------FIND TIMES FOR CMJ TRIAL--------#######
     if url_list[0]['type_of_trial'] == "CMJ":
         # Find Take Off Time: 
@@ -225,7 +226,7 @@ if url_list:
             if df.loc[i,'Force'] < (df['Force'].mean() - 80):
                 start_try_time = i
                 break
-        closest_to_zero_velocity = df.loc[start_try_time:take_off_time,'Velocity'].sub(0).abs().idxmin()
+        closest_to_zero_velocity = df.loc[start_try_time+50:take_off_time,'Velocity'].sub(0).abs().idxmin()
         closest_to_average_force_1st = (df.loc[start_try_time:closest_to_zero_velocity,'Force']-df['Force'].mean()).sub(0).abs().idxmin()
 
         # df1 = df.copy()
@@ -313,21 +314,40 @@ if url_list:
 
         # Βρισκω το Net Impluse, Απο το διαστημα 1ης φορας ταχυτητας μηδεν μεχρι 1ης φορας δυναμης μηδεν, βρισκω μεσο ορο των τιμων της στηλης Net Force
         net_impluse = df.loc[closest_to_zero_velocity:take_off_time, 'Net_Force'].mean()
-        st.write('net_impluse',net_impluse)
         # Βρισκω την διαφορα χρονου 1η φορα δυναμη μηδεν πλην 1η φορα ταχυτητα μηδεν
         concentric_time = take_off_time - closest_to_zero_velocity 
-        closest_to_zero_velocity
         # Βρισκω Velocity Take off
         velocity_take_off = (concentric_time / 1000 * net_impluse) / url_list[0]['weight']
         # Βρισκω το αλμα του DJ βασισμενο σε Velocity Take off
         jump_depending_take_off_velocity = ( velocity_take_off ** 2 ) / ( 2 * g ) 
-        jump_depending_take_off_velocity
-        net_impluse
         # calculate one new variable (contact_time), which is from the time the user steps on the platform until the time he does not:
         contact_time = take_off_time - start_try_time
 
-        st.write("Velocity Take Off from time take of ",df.loc[take_off_time, 'Velocity'])
-        st.write("Velocity Take Off from equation ", velocity_take_off)
+    
+    #######--------FIND TIMES FOR ISO TRIAL------#######
+    if url_list[0]['type_of_trial'] == "ISO":
+            user_time_input_start_try_time = None
+            user_time_input_rfd_from_time = None
+            user_time_input_rfd_till_time = None
+            rsi = None
+            jump_depending_time_in_air = None
+            impulse_bw = None
+            impulse_grf = None
+            landing_time = None
+
+    if url_list[0]['type_of_trial'] == "ISO":
+        force_mean_iso_0_200 = df.loc[0:200, 'Force'].mean()
+        for i in range (0, len(df.index)):
+            if df.loc[i,'Force'] >= force_mean_iso_0_200 + 50:
+                start_trial_iso = i
+                break
+        # Find Landing Time:
+        for i in range (start_trial_iso, len(df.index)):
+            if df.loc[i,'Force'] <= 0:
+                end_trial_iso = i
+                break
+    #######--------END OF FIND TIMES FOR ISO TRIAL------#######
+
 
     ##############------------CREATE THE CHART------------##################
     with st.expander(("Graph"), expanded=True):
@@ -539,13 +559,19 @@ if url_list:
     col1, col2 = st.columns(2)
     r=0  
     with st.form("Form for times",clear_on_submit = False):
+        # define these variable because in ISO trials there is not this variable and needs to define some None value:
+        
         c1, c2, c3, c4, c5, c6, c7, c8= st.columns(8)
-        if url_list[0]['type_of_trial'] == "CMJ":
+        if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" or url_list[0]['type_of_trial'] == "DJ":
             with c1: 
                 user_time_input_start_try_time = st.number_input("Start trial time", value=start_try_time, step=1, help="This is the time of the start of the trial.")
+    
         if url_list[0]['type_of_trial'] == "CMJ":
             with c2:        
                 user_time_input_min_jumps_table = st.number_input("From Time", value=closest_to_zero_velocity, step=1, help="Τhe beginning of the desired time interval.")
+        elif url_list[0]['type_of_trial'] == "ISO":
+            with c2:        
+                user_time_input_min_jumps_table = st.number_input("From Time", value=start_trial_iso, step=1, help="Τhe beginning of the desired time interval.")
         else:
             with c2:        
                 user_time_input_min_jumps_table = st.number_input("From Time", value=0, step=1, help="Τhe beginning of the desired time interval.")
@@ -553,6 +579,9 @@ if url_list:
         if url_list[0]['type_of_trial'] == "CMJ":
             with c3:
                 user_time_input_max_jumps_table = st.number_input("Till Time", value=take_off_time, step=1, help="The end of the desired time interval." )#int(df.index.max()))
+        elif url_list[0]['type_of_trial'] == "ISO":
+            with c3:
+                user_time_input_max_jumps_table = st.number_input("Till Time", value=end_trial_iso, step=1, help="The end of the desired time interval." )#int(df.index.max()))
         else:
             with c3:
                 user_time_input_max_jumps_table = st.number_input("Till Time", value=0, step=1, help="The end of the desired time interval." )#int(df.index.max()))
@@ -573,7 +602,8 @@ if url_list:
             if url_list[0]['type_of_trial'] != "ISO":
                 rms_3_iso = st.number_input("ISO RMS 3", help="The third ISO RMS Value.")
                 
-        if url_list[0]['type_of_trial'] == "CMJ":
+        if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" or url_list[0]['type_of_trial'] == "DJ":
+            
             with c7:
                 user_time_input_rfd_from_time = st.number_input("RFD from time:", value=0, step=1,help="Time from start RFD")
             
@@ -583,8 +613,9 @@ if url_list:
         brushed_submitted = st.form_submit_button("Calculate results")
 
     df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index < user_time_input_max_jumps_table)]
-    jump_depending_impluse = float("nan")
+    jump_depending_impluse = None
 
+    
     # Find the Jump depending on time in Air and on Take Off Velocity for CMJ & SJ Trial:
     if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ":
         #vertical_take_off_velocity = st.number_input("Give the time of vertical take off velocity")
@@ -609,7 +640,8 @@ if url_list:
         st.session_state.load_state = True
 
         df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index <= user_time_input_max_jumps_table)]
-        
+        impulse_bw = None
+        impulse_grf = None
         ######### ######## ########## FIND JUMP DEPENDING ON IMPLUSE FOR CMJ, SJ ############ ########### ############
         if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" :
             #Find the Impluse GRF:
@@ -894,8 +926,8 @@ if url_list:
         #########---------END OF FINAL RESULTS-------------##############
         
         #########---------INSERT RESULTS TO DATABASE-------##############
-        with st.form("Insert results to Database:"):   
-            verify_check_box_insert_final_results = st.text_input( "Please type Verify to insert the final results to database")
+        with st.sidebar.form("Insert results to Database:"):   
+            verify_check_box_insert_final_results = st.text_input( "Type Verify to insert results to database")
             submitted_button_insert_final_results = st.form_submit_button("Insert Results")
         
         if submitted_button_insert_final_results:
@@ -909,35 +941,34 @@ if url_list:
             if query.data:
                 st.warning("This entry with this id allready exists in table")
             else:
-                st.write("Mpika Else", url_id_number_input)
+                
                 # After Export , try to insert these values to statistics table      
                 def add_entries_to_jumps_statistics_table(supabase):
                         value = {'id': url_id_number_input, 'fullname': url_list[0]['fullname'], "age": url_list[0]['age'] ,\
-                                 "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
-                                 'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
-                                'jump': round(jump_depending_impluse,4), "jump_depending_time_in_air" : round(jump_depending_time_in_air,4), 
+                                "height": url_list[0]['height'], "weight": url_list[0]['weight'], 'type_of_trial': url_list[0]['type_of_trial'],
+                                'filename': url_list[0]['filename'], "filepath": url_list[0]['filepath'], 'occupy': url_list[0]['occupy'], 
+                                'jump': round(jump_depending_impluse,4) if jump_depending_impluse is not None else jump_depending_impluse, 
+                                "jump_depending_time_in_air" : round(jump_depending_time_in_air,4) if jump_depending_time_in_air is not None else jump_depending_time_in_air, 
                                 'force_sum' : round(df_brushed['Force'].sum(),4),
                                 'force_mean': round(df_brushed['Force'].mean(),4), 'force_min': round(df_brushed['Force'].min(),4),
                                 'force_max': round(max(df_brushed['Force']),4), 'user_time_input_min_jumps_table': user_time_input_min_jumps_table,
                                 'user_time_input_max_jumps_table': user_time_input_max_jumps_table,
-                                'user_time_input_start_try_time' : user_time_input_start_try_time, 'user_time_input_rfd_from_time' : user_time_input_rfd_from_time,
-                                'user_time_input_rfd_till_time' : user_time_input_rfd_till_time,  'landing_time': landing_time
+                                'user_time_input_start_try_time' : user_time_input_start_try_time ,
+                                'user_time_input_rfd_from_time' : user_time_input_rfd_from_time ,
+                                'user_time_input_rfd_till_time' : user_time_input_rfd_till_time ,
+                                'landing_time': landing_time , 'rsi' : rsi, 'impulse_bw' : impulse_bw, 'impulse_grf':impulse_grf,
+                                'date_of_trial' :url_list[0]['created_at']
                                 }
-                                 
-                                 #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
-                               # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
+                                
+                                #'rms_1_mean': df_brushed['RMS_1'].mean(), 'rms_2_mean': df_brushed['RMS_2'].mean(), 'rms_3_mean': df_brushed['RMS_3'].mean(),  'force_mean': round(df_brushed['Force'].mean(),4), 
+                            # 'force_max': round(max(df_brushed['Force']),4), 'rms_1_norm': rms_1_normalized, 'rms_2_norm': rms_2_normalized, 'rms_3_norm': rms_3_normalized }
                         data = supabase.table('jumps_statistics_table').insert(value).execute()
                 def main():
                     new_entry = add_entries_to_jumps_statistics_table(con)
                 main()
                 st.success('Thank you! A new entry has been inserted to database!')
 
-                def select_all_from_jumps_statistics_table():
-                    query=con.table("jumps_statistics_table").select("*").execute()
-                    return query
-                query = select_all_from_jumps_statistics_table()
-                df_jumps_statistics_table = pd.DataFrame(query.data)
-                st.write("The datatable with Final Results:", df_jumps_statistics_table)
+
             #########---------END OF INSERT RESULTS TO DATABASE-------##############
     ################---------------END OF BRUSHED AREA----------------####################
 

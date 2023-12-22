@@ -121,7 +121,6 @@ def select_all_jumps_statistics_table():
 
     return df
 
-@st.cache_data
 def calculate_kpis(df: pd.DataFrame) -> List[float]:
     total_trials = len(df)
     total_cmj_trials = len(df["Type of trial"][df["Type of trial"] == "CMJ"])

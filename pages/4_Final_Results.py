@@ -7,9 +7,9 @@ import seaborn as sns
 import numpy as np
 import plotly.express as px
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.ensemble import RandomForestRegressor
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.model_selection import train_test_split, cross_val_score
+# from sklearn.ensemble import RandomForestRegressor
 
 
        

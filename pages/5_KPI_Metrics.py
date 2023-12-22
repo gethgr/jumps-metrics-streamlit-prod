@@ -9,9 +9,9 @@ import plotly.express as px
 from typing import List, Tuple
 
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.ensemble import RandomForestRegressor
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.model_selection import train_test_split, cross_val_score
+# from sklearn.ensemble import RandomForestRegressor
 
 # calculate the Pearson's correlation between two variables
 from numpy.random import randn

@@ -1,3 +1,6 @@
 /.streamlit
 /backup_supabase
 /backup_trials_files
+/pages/5_General_Statistics.py
+/pages/6_CMJ_beta.py
+/pages/7_Calculate_Results_Beta.py

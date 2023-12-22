@@ -207,7 +207,7 @@ def display_charts(df, select_user, select_type_of_trial, start_date, end_date):
         df_corr = df[df['Fullname'] == select_user].reset_index().copy()
         df_corr = df_corr[['Duration', 'Force max', 'Force mean',  'Force sum', 'Jump (Impulse)' ]]
         df_corr = df_corr[(df['Date of trial'] > start_date) & (df['Date of trial'] <= end_date)]
-        st.write(df_corr.corr()['Jump (Impulse)'])
+        #st.write(df_corr.corr()['Jump (Impulse)'])
         col1, col2 = st.columns(2, gap="Large")
         
         with col2:
@@ -277,9 +277,9 @@ def main():
     
     display_kpi_metrics(kpis, kpi_names)
     display_charts(df, select_user, select_type_of_trial, start_date, end_date)
-    st.write("#")
-    st.write("##### Display corellation depending on Jump:")
-    correlation(df)
+    # st.write("#")
+    # st.write("##### Display corellation depending on Jump:")
+    # correlation(df)
     
 
 if __name__ == '__main__':

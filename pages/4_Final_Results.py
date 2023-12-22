@@ -105,8 +105,12 @@ df.rename(columns = {'id' :'ID',
                      'impulse_grf' : 'Impulse gravity',
                      'date_of_trial' : 'Date of trial'
                      }, inplace = True)
-df['duration_from_till_time'] = df['Till time'] - df['From time']
-df['duration_from_start_trial_to_from_time'] = df['From time'] - df['Start trial time']
+df['Duration I'] = df['From time'] - df['Start trial time']
+df['Duration II'] = df['Till time'] - df['Start trial time']
+df['Duration III'] = df['Landing time'] - df['Start trial time']
+df['Duration IV'] = df['Till time'] - df['From time']
+df['velocity_momentum'] = (df['Impulse gravity'] - df['Impulse body weight']) / df['Weight']
+
 
 st.write("## Final Results of trials:")
 # st.write("""0) df_brushed['Impulse_grf'] = df_brushed['Force'] * (1/1000)
@@ -122,11 +126,11 @@ if not df.empty:
     with col2:
         type_of_trial_search = st.selectbox("Επέλεξε ίδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO", "SJ"))
     with col3:
-        occupy_search = st.text_input("Occupy:")
+        occupy_search = st.text_input("Ιδιότητα:")
     with col1:
         unique_fullnames = df['Fullname'].unique()
         options =[" "] + [unique_fullnames[i] for i in range (0, len(unique_fullnames)) ]
-        fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
+        fullname_search = st.selectbox("Επέλεξε χρήστη:" , options = options)
     # conditions depending on searches input fields:
     if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
         st.dataframe(df.loc[:, ~df.columns.isin(['Filename', 'Filepath'])].sort_values('Created at', ascending=False), use_container_width=True)
@@ -154,100 +158,90 @@ st.download_button(
     mime='text/csv',
 )
 
-# add tabs
-tab1, tab2, tab3 = st.tabs(["Data Info", "Numeric Features", "Categorical Features"])
-with tab1:
-#   if uploaded_data is not None:
-#     # extract meta-data from the uploaded dataset
+# # add tabs
+# tab1, tab2, tab3 = st.tabs(["Data Info", "Numeric Features", "Categorical Features"])
+# with tab1:
+# #   if uploaded_data is not None:
+# #     # extract meta-data from the uploaded dataset
     
 
-    row_count = df.shape[0]
+#     row_count = df.shape[0]
 
-    column_count = df.shape[1]
+#     column_count = df.shape[1]
         
-    # Use the duplicated() function to identify duplicate rows
-    duplicates = df[df.duplicated()]
-    duplicate_row_count =  duplicates.shape[0]
+#     # Use the duplicated() function to identify duplicate rows
+#     duplicates = df[df.duplicated()]
+#     duplicate_row_count =  duplicates.shape[0]
 
-    missing_value_row_count = df[df.isna().any(axis=1)].shape[0]
+#     missing_value_row_count = df[df.isna().any(axis=1)].shape[0]
 
-    table_markdown = f"""
-        | Description | Value | 
-        |---|---|
-        | Number of Rows | {row_count} |
-        | Number of Columns | {column_count} |
-        | Number of Duplicated Rows | {duplicate_row_count} |
-        | Number of Rows with Missing Values | {missing_value_row_count} |
-        """
+#     table_markdown = f"""
+#         | Description | Value | 
+#         |---|---|
+#         | Number of Rows | {row_count} |
+#         | Number of Columns | {column_count} |
+#         | Number of Duplicated Rows | {duplicate_row_count} |
+#         | Number of Rows with Missing Values | {missing_value_row_count} |
+#         """
 
 
     
 
-    # get feature names
-    columns = list(df.columns)
+#     # get feature names
+#     columns = list(df.columns)
 
-    # create dataframe
-    column_info_table = pd.DataFrame({
-        "column": columns,
-        "data_type": df.dtypes.tolist()
-    })
-    col1 , col2 , col3 = st.columns(3)
-    with col1:
-        st.header("Meta-data")
-        st.markdown(table_markdown)
-    with col2:
-        st.header("Columns Type")
-        # display pandas dataframe as a table
-        st.dataframe(column_info_table, hide_index=True)
-    with col3:
-        st.write("##### List of unique persons who made trial: ")
-        st.write(df.Fullname.unique())
-with tab2:
-    # find numeric features  in the dataframe
-    numeric_cols = df.select_dtypes(include='number').columns.tolist()
+#     # create dataframe
+#     column_info_table = pd.DataFrame({
+#         "column": columns,
+#         "data_type": df.dtypes.tolist()
+#     })
+#     col1 , col2 , col3 = st.columns(3)
+#     with col1:
+#         st.header("Meta-data")
+#         st.markdown(table_markdown)
+#     with col2:
+#         st.header("Columns Type")
+#         # display pandas dataframe as a table
+#         st.dataframe(column_info_table, hide_index=True)
+#     with col3:
+#         st.write("##### List of unique persons who made trial: ")
+#         st.write(df.Fullname.unique())
+# with tab2:
+#     # find numeric features  in the dataframe
+#     numeric_cols = df.select_dtypes(include='number').columns.tolist()
 
-    # add selection-box widget
-    selected_num_col = st.selectbox("Which numeric column do you want to explore?", numeric_cols)
+#     # add selection-box widget
+#     selected_num_col = st.selectbox("Which numeric column do you want to explore?", numeric_cols)
 
-    col1, col2 = st.columns(2, gap='small')
-    with col1:
+#     col1, col2 = st.columns(2, gap='small')
+#     with col1:
         
-        st.header(f"{selected_num_col} - Statistics")
+#         st.header(f"{selected_num_col} - Statistics")
         
-        col_info = {}
-        col_info["Number of Unique Values"] = len(df[selected_num_col].unique())
-        col_info["Number of Rows with Missing Values"] = df[selected_num_col].isnull().sum()
-        col_info["Number of Rows with 0"] = df[selected_num_col].eq(0).sum()
-        col_info["Number of Rows with Negative Values"] = df[selected_num_col].lt(0).sum()
-        col_info["Average Value"] = df[selected_num_col].mean()
-        col_info["Standard Deviation Value"] = df[selected_num_col].std()
-        col_info["Minimum Value"] = df[selected_num_col].min()
-        col_info["Maximum Value"] = df[selected_num_col].max()
-        col_info["Median Value"] = df[selected_num_col].median()
+#         col_info = {}
+#         col_info["Number of Unique Values"] = len(df[selected_num_col].unique())
+#         col_info["Number of Rows with Missing Values"] = df[selected_num_col].isnull().sum()
+#         col_info["Number of Rows with 0"] = df[selected_num_col].eq(0).sum()
+#         col_info["Number of Rows with Negative Values"] = df[selected_num_col].lt(0).sum()
+#         col_info["Average Value"] = df[selected_num_col].mean()
+#         col_info["Standard Deviation Value"] = df[selected_num_col].std()
+#         col_info["Minimum Value"] = df[selected_num_col].min()
+#         col_info["Maximum Value"] = df[selected_num_col].max()
+#         col_info["Median Value"] = df[selected_num_col].median()
 
-        info_df = pd.DataFrame(list(col_info.items()), columns=['Description', 'Value'])
+#         info_df = pd.DataFrame(list(col_info.items()), columns=['Description', 'Value'])
 
-        # display dataframe as a markdown table
-        st.dataframe(info_df)
+#         # display dataframe as a markdown table
+#         st.dataframe(info_df)
    
-    with col2:
-        st.header("Histogram")
-        fig = px.histogram(df, x=selected_num_col)
-        st.plotly_chart(fig, use_container_width=True)
-
-st.write("---")               
-st.write("##### List of unique persons who made trial: ")
-col1,col2,col3 = st.columns(3)
-with col1:
-    st.write(df.Fullname.unique())
-with col2:
-    st.write("Highest jump.", df["Jump (Impulse)"].max())
-with col3:
-    st.write("Max force", df["Force max"].max())
+#     with col2:
+#         st.header("Histogram")
+#         fig = px.histogram(df, x=selected_num_col)
+#         st.plotly_chart(fig, use_container_width=True)
 
 st.write("#### Display graphs")
 col1,col2,col3 = st.columns(3, gap="large")
-columns = [" "] + ['Age', 'Height', 'Weight', 'Jump (Impulse)' ]
+columns = [" "] + [ 'Jump (Impulse)', 'Force max', 'Duration I', 'Duration II', 'Duration III' ]
 
 #columns = [" "] + [df.columns[i] for i in range (0, len(df.columns))]
 with col1:
@@ -257,7 +251,7 @@ with col1:
     select_column1 = st.selectbox('Select Column for person 1',
     options = columns)
     if select_column1 != " ":
-        df[df["Fullname"] == select_person1][select_column1].plot.line()
+        df[df["Fullname"] == select_person1][select_column1].plot.bar()
         plt.xlabel("Times of trial")
         plt.ylabel(select_column1)
         st.pyplot(fig1)
@@ -269,7 +263,7 @@ with col2:
     select_column2 = st.selectbox('Select Column for person 2',
     options = columns)
     if select_column2 != " ":
-        df[df["Fullname"] == select_person2][select_column2].plot.line()
+        df[df["Fullname"] == select_person2][select_column2].plot.bar()
         plt.xlabel("Times of trial")
         plt.ylabel(select_column2)
         st.pyplot(fig2)
@@ -282,106 +276,128 @@ with col3:
     select_column3 = st.selectbox('Select Column for person 3',
     options = columns)
     if select_column3 != " ":
-        df[df["Fullname"] == select_person3][select_column3].plot.line()
+        df[df["Fullname"] == select_person3][select_column3].plot.bar()
         plt.xlabel("Times of trial")
         plt.ylabel(select_column3)
         st.pyplot(fig3)
 
-df_corr = df[['Jump (Impulse)', 'Age', 'Weight', 'Height', 'duration_from_start_trial_to_from_time']].copy() #, 'Impulse body weight','Impulse gravity','Force max', 'Force mean',  'Force sum', 'Jump (Impulse)', 'duration_from_till_time', 'duration_from_start_trial_to_from_time']].copy()
-col1, col2 = st.columns(2, gap="large")
+
+df_corr = df[['Jump (Impulse)', 'Duration I', 'Duration II', 'Duration III', 'Duration IV', 'Impulse body weight', 'Impulse gravity', 'velocity_momentum']].copy() #, 'Impulse body weight','Impulse gravity','Force max', 'Force mean',  'Force sum', 'Jump (Impulse)', 'duration_from_till_time', 'duration_from_start_trial_to_from_time']].copy()
+corr_matrix = df_corr.corr()
+col1,col2=st.columns([2,1], gap="Large")
 with col1:
-    corr_matrix_jump = df_corr.corr()['Jump (Impulse)']
-    st.dataframe(corr_matrix_jump.sort_values(ascending=False), use_container_width=True)
+    st.write("Correlation for Duration, Force max, Duration I, Duration II, Duration III / Jump (Impulse):")
+    fig = plt.figure(figsize=(15, 12))
+    sns.heatmap(corr_matrix, 
+                
+                annot=True, 
+                linewidths=0.5, 
+                fmt= ".2f", 
+                cmap="YlGnBu")
+    st.pyplot(fig)
 with col2:
-    st.write("")
-    #corr_matrix_rsi = df_corr.corr()['rsi']
-    #st.dataframe(corr_matrix_rsi.sort_values(ascending=False), use_container_width=True)
+    st.write("Explanation of Durations:")
+    st.write(" Take of time: The moment when the user does not touch the platform just before the jump. ")
+    st.write(" Landing time: The moment the user steps on the platform after jumping. ")
+    st.write("**Duration I**: The time moment from start trial untill the closest to zero velocity.")
+    st.write("**Duration II**: The time period from start trial untill the take of time")
+    st.write("**Duration III**: The time period from start trial untill the landing time ")
+    st.write("Correlation table:")
+    corr_matrix_jump = df_corr.corr()['Jump (Impulse)']
+    st.dataframe(corr_matrix_jump, use_container_width=True)
+# col1, col2 = st.columns(2, gap="large")
+# with col1:
+#     corr_matrix_jump = df_corr.corr()['Jump (Impulse)']
+#     st.dataframe(corr_matrix_jump.sort_values(ascending=False), use_container_width=True)
+# with col2:
+#     st.write("")
+#     #corr_matrix_rsi = df_corr.corr()['rsi']
+#     #st.dataframe(corr_matrix_rsi.sort_values(ascending=False), use_container_width=True)
 
-df_corr
-######------MODELING--------#######
-st.write("## 5. Modelling")
+# ######------MODELING--------#######
+# st.write("## 5. Modelling")
 
-# Instantiate model
+# # Instantiate model
 
-# Fit the model
+# # Fit the model
 
-# Split data into X and y
-st.write("- Split the data into X and y :")
-X = df_corr.drop("Jump (Impulse)", axis=1)
-y = df_corr["Jump (Impulse)"]
-st.write("- Split the data into train and test sets :")
-# Split data into train and test sets
-np.random.seed(42)
-# Split into train & test set
-X_train, X_test, y_train, y_test = train_test_split(X,
-                                                    y,
-                                                    test_size=0.2)
-np.random.seed(42)
-st.write("- Create the LogisticRegression Model")
-model = RandomForestRegressor(n_jobs=20,
-                             )
+# # Split data into X and y
+# st.write("- Split the data into X and y :")
+# X = df_corr.drop("Jump (Impulse)", axis=1)
+# y = df_corr["Jump (Impulse)"]
+# st.write("- Split the data into train and test sets :")
+# # Split data into train and test sets
+# np.random.seed(42)
+# # Split into train & test set
+# X_train, X_test, y_train, y_test = train_test_split(X,
+#                                                     y,
+#                                                     test_size=0.2)
+# np.random.seed(42)
+# st.write("- Create the LogisticRegression Model")
+# model = RandomForestRegressor(n_jobs=20,
+#                              )
 
-from sklearn.model_selection import RandomizedSearchCV
-# Different RandomForestRegressor hyperparameters
-rf_grid = {"n_estimators": np.arange(10, 100, 10),
-           "max_depth": [None, 3, 5, 10],
-           "min_samples_split": np.arange(2, 20, 2),
-           "min_samples_leaf": np.arange(1, 20, 2),
-           "max_features": [0.5, 1, "sqrt", "auto"],
-           "max_samples": [46]}
+# from sklearn.model_selection import RandomizedSearchCV
+# # Different RandomForestRegressor hyperparameters
+# rf_grid = {"n_estimators": np.arange(10, 100, 10),
+#            "max_depth": [None, 3, 5, 10],
+#            "min_samples_split": np.arange(2, 20, 2),
+#            "min_samples_leaf": np.arange(1, 20, 2),
+#            "max_features": [0.5, 1, "sqrt", "auto"],
+#            "max_samples": [46]}
 
-# Instantiate RandomizedSearchCV model
-rs_model = RandomizedSearchCV(RandomForestRegressor(n_jobs=-1,
-                                                    random_state=42),
-                              param_distributions=rf_grid,
-                              n_iter=2,
-                              cv=5,
-                              verbose=True,
-                              error_score='raise')
+# # Instantiate RandomizedSearchCV model
+# rs_model = RandomizedSearchCV(RandomForestRegressor(n_jobs=-1,
+#                                                     random_state=42),
+#                               param_distributions=rf_grid,
+#                               n_iter=2,
+#                               cv=5,
+#                               verbose=True,
+#                               error_score='raise')
 
-# Fit the RandomizedSearchCV model
-rs_model.fit(X_train, y_train)
-st.write("** rs_model Model Score of X_test, y_test:**", rs_model.score(X_test, y_test))
+# # Fit the RandomizedSearchCV model
+# rs_model.fit(X_train, y_train)
+# st.write("** rs_model Model Score of X_test, y_test:**", rs_model.score(X_test, y_test))
 
-st.write("- Fit the model")
+# st.write("- Fit the model")
 
-model.fit(X_train, y_train)
-st.write("**Model Score of X_test, y_test:**", model.score(X_test, y_test))
+# model.fit(X_train, y_train)
+# st.write("**Model Score of X_test, y_test:**", model.score(X_test, y_test))
 
-def jump_prediction(input_data):
-    # Changing the input data to a numpy array:
-    numpy_data= np.asarray(input_data)
-    # Reshaping the numpy:
-    input_reshaped = numpy_data.reshape(1,-1)
-    prediction = model.predict(input_reshaped)
-    st.write("Jump prediction result", prediction)
-    st.write(input_reshaped)
+# def jump_prediction(input_data):
+#     # Changing the input data to a numpy array:
+#     numpy_data= np.asarray(input_data)
+#     # Reshaping the numpy:
+#     input_reshaped = numpy_data.reshape(1,-1)
+#     prediction = model.predict(input_reshaped)
+#     st.write("Jump prediction result", prediction)
+#     st.write(input_reshaped)
 
 
-st.write("Predict the jump (impulse)")
+# st.write("Predict the jump (impulse)")
 
-with st.form("my_form"):
-   st.write("Inside the form")
-   #time_in_air = st.number_input("Time in air")
-   age = st.number_input("Age")
-   Height = st.number_input("Height")
-   Weight = st.number_input("Weight")
-   duration = st.number_input("Duration")
-   #Force_max = st.number_input("Force max")
-   #Force_mean = st.number_input("Force_mean")
-   #Force_min = st.number_input("Force_min")
-   #Force_sum = st.number_input("Force_sum")
-   #rsi = st.number_input("rsi")
-   #Impulse_bw_duration = st.number_input("Impulse_bw_duration")
-   #duration_from_till_time = st.number_input("duration_from_till_time")
-   #Impulse_gravity = st.number_input("Impulse_gravity")
-   #Impulse_body_weight = st.number_input("Impulse_body_weight")
+# with st.form("my_form"):
+#    st.write("Inside the form")
+#    #time_in_air = st.number_input("Time in air")
+#    age = st.number_input("Age")
+#    Height = st.number_input("Height")
+#    Weight = st.number_input("Weight")
+#    duration = st.number_input("Duration")
+#    #Force_max = st.number_input("Force max")
+#    #Force_mean = st.number_input("Force_mean")
+#    #Force_min = st.number_input("Force_min")
+#    #Force_sum = st.number_input("Force_sum")
+#    #rsi = st.number_input("rsi")
+#    #Impulse_bw_duration = st.number_input("Impulse_bw_duration")
+#    #duration_from_till_time = st.number_input("duration_from_till_time")
+#    #Impulse_gravity = st.number_input("Impulse_gravity")
+#    #Impulse_body_weight = st.number_input("Impulse_body_weight")
 
-   # Every form must have a submit button.
-   submitted = st.form_submit_button("Submit")
-   if submitted:
-    st.write("Bika")
-    predict = jump_prediction([ age, Height, Weight, duration ])
+#    # Every form must have a submit button.
+#    submitted = st.form_submit_button("Submit")
+#    if submitted:
+#     st.write("Bika")
+#     predict = jump_prediction([ age, Height, Weight, duration ])
     
 
-st.write("Outside the form")
+# st.write("Outside the form")

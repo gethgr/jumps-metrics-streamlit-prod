@@ -973,12 +973,29 @@ if url_list:
             label='What column do you want to display', default=('Time', 'Force', 'Acceleration', 'Velocity', 'RMS_1', 'RMS_2', 'RMS_3'), help='Click to select', options=df.columns)
             st.write(df[selected_clear_columns])
             #Button to export results
-            st.download_button(
-                label="Export table dataset",
-                data=df[selected_clear_columns].to_csv(),
-                file_name=url_list[0]['filename'] + '.csv',
-                mime='text/csv',
-            )
+            # st.download_button(
+            #     label="Export table dataset",
+            #     data=df[selected_clear_columns].to_csv(),
+            #     file_name=url_list[0]['filename'] + '.csv',
+            #     mime='text/csv',
+            # )
+            data = df[selected_clear_columns]
+            def to_excel(data):
+                output = BytesIO()
+                writer = pd.ExcelWriter(output, engine='xlsxwriter')
+                df[selected_clear_columns].to_excel(writer, index=False, sheet_name='Sheet1')
+                workbook = writer.book
+                worksheet = writer.sheets['Sheet1']
+                format1 = workbook.add_format({'num_format': '0.00'}) 
+                worksheet.set_column('A:A', None, format1)  
+                writer.close()
+                processed_data = output.getvalue()
+                return processed_data
+
+            df_xlsx = to_excel(data)
+            st.download_button(label='Export table dataset in xlsx',
+                                            data=df_xlsx ,
+                                            file_name= url_list[0]['filename'] + '_.xlsx')
     #############------------END OF UN BRUSHED AREA-------------##################
 
     ##############---------------DISPLAY SOME VALUES ON SIDEBAR------################

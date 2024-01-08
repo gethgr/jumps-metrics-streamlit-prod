@@ -673,7 +673,6 @@ if url_list:
                 headers_list_rfd1.append("RFD 0 - "+(str(k)))
                 k += 50
                 l_rfd1.append(b_rfd1)
-                
                 #FIND R-EMG
                 # X = df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'Rows_Count'].mean()
                 # Y1 = df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'] - df_brushed.loc[user_time_input_min_jumps_table:i:1,'pre_pro_signal_EMG_1'].mean()
@@ -785,12 +784,30 @@ if url_list:
                 label='What column do you want to display', default=('Time', 'Force', 'Acceleration', 'Velocity', 'RMS_1', 'RMS_2','RMS_3'), help='Click to select', options=df_brushed.columns)
                 st.write(df_brushed[selected_filtered_columns])
                 #Button to export results
-                st.download_button(
-                    label="Export table dataset",
-                    data=df_brushed[selected_filtered_columns].to_csv(),
-                    file_name=url_list[0]['filename'] +'.csv',
-                    mime='text/csv',
-                )
+                # st.write("EDW")
+                # st.download_button(
+                #     label="Export table dataset",
+                #     data=df_brushed[selected_filtered_columns].to_csv(),
+                #     file_name=url_list[0]['filename'] +'.csv',
+                #     mime='text/csv',
+                # )
+                data = df_brushed[selected_filtered_columns]
+                def to_excel(data):
+                    output = BytesIO()
+                    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+                    df_brushed[selected_filtered_columns].to_excel(writer, index=False, sheet_name='Sheet1')
+                    workbook = writer.book
+                    worksheet = writer.sheets['Sheet1']
+                    format1 = workbook.add_format({'num_format': '0.00'}) 
+                    worksheet.set_column('A:A', None, format1)  
+                    writer.close()
+                    processed_data = output.getvalue()
+                    return processed_data
+
+                df_xlsx = to_excel(data)
+                st.download_button(label='Export table dataset in xlsx',
+                                                data=df_xlsx ,
+                                                file_name= url_list[0]['filename'] + '_.xlsx')
         ##########--------END OF DIPLAY SPECIFIC CALCULATIONS ON BRUSHED AREA CMS, SJ, DJ------########
 
         #########---------FINAL RESULTS-------------##############
@@ -804,7 +821,7 @@ if url_list:
                     'Type of try' : url_list[0]['type_of_trial'],
                     'Filename' : url_list[0]['filename'],
                     'Body Mass (kg)': url_list[0]['weight'],
-                    #'Jump (m/s)' : [jump_depending_impluse],
+                    #'Jump (m)' : [jump_depending_impluse],
                     #'RSI m/s' : [rsi],
                     'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
                     'RMS 1 Norm' : [rms_1_normalized],
@@ -814,7 +831,7 @@ if url_list:
                     'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
                     'Force Mean (N)' : [df_brushed['Force'].mean()],
                     'Force Max (N)' : [max(df_brushed['Force'])],  
-                    'RFD Total ' + str(from_time_rfd_iso) + ' - ' + str(till_time_rfd_iso) : [b_rfd1_whole]                
+                    'RFD Total (N / ms)' + str(from_time_rfd_iso) + ' - ' + str(till_time_rfd_iso) : [b_rfd1_whole]                
                     }
         elif url_list[0]['type_of_trial'] == 'DJ':
             specific_metrics = {#'Unit': ['results'],
@@ -823,7 +840,7 @@ if url_list:
                     'Type of try' : url_list[0]['type_of_trial'],
                     'Filename' : url_list[0]['filename'],
                     'Body Mass (kg)': url_list[0]['weight'],
-                    'Jump (m/s)' : [jump_depending_take_off_velocity],
+                    'Jump (m)' : [jump_depending_take_off_velocity],
                     'Drop Height (m)' : [url_list[0]['drop_height']],
                     'RSI m/s' : [rsi],
                     'Contact Time ms' : [contact_time],
@@ -835,7 +852,7 @@ if url_list:
                     'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
                     'Force Mean (N)' : [df_brushed['Force'].mean()],
                     'Force Max (N)' : [max(df_brushed['Force'])],  
-                    'RFD Total ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
+                    'RFD Total (N / ms) ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
                     }
 
         else:
@@ -845,7 +862,7 @@ if url_list:
                     'Type of try' : url_list[0]['type_of_trial'],
                     'Filename' : url_list[0]['filename'],
                     'Body Mass (kg)': url_list[0]['weight'],
-                    'Jump (m/s)' : [jump_depending_impluse],
+                    'Jump (m)' : [jump_depending_impluse],
                     'RSI m/s' : [rsi],
                     'RMS 1 Mean' : [df_brushed['RMS_1'].mean()],
                     'RMS 1 Norm' : [rms_1_normalized],
@@ -855,7 +872,7 @@ if url_list:
                     'RMS 3 Norm' : [rms_3_normalized] if rms_3_normalized is not None else {},
                     'Force Mean (N)' : [df_brushed['Force'].mean()],
                     'Force Max (N)' : [max(df_brushed['Force'])],  
-                    'RFD Total ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
+                    'RFD Total (N / ms) ' + str(user_time_input_min_jumps_table) + ' - ' + str(user_time_input_max_jumps_table) : [b_rfd1_whole]                
                     }
 
         specific_metrics_df = pd.DataFrame(specific_metrics)

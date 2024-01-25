@@ -138,10 +138,10 @@ with st.expander("List of all entries from the database.", expanded=True):
 with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):   
     url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results:",value = 0,step= 1)
     # dokimastika
-    file_try = st.file_uploader("Choose a file*", type="csv")
+    #file_try = st.file_uploader("Choose a file*", type="csv")
     id_submitted = st.form_submit_button("Calculate Results")
     # Querry to find the data row of specific ID
-    if url_id_number_input and file_try:
+    if url_id_number_input:
 
         def select_filepath_from_specific_id():
             query=con.table("jumps_table").select("*").eq("id", url_id_number_input).execute()
@@ -153,7 +153,7 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
         if url_list:
 
             # dokimastika to ekana comment to apo katw
-            #url = url_list[0]['filepath'].replace(" ", "%20")
+            url = url_list[0]['filepath'].replace(" ", "%20")
             # na to ksekanw comment to apo panw ^
 
             st.write("Person ID:", url_list[0]['id'])
@@ -166,11 +166,11 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
 def get_data():
     if url_list:
         storage_options = {'User-Agent': 'Mozilla/5.0'}
-        df = pd.read_csv(file_try)
+        #df = pd.read_csv(file_try)
         # dokimastika to ekana comment to apo katw
-        #df = pd.read_csv(url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
+        df = pd.read_csv(url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
         # na to ksekanw comment to apo panw ^ 
-        
+
         # Define Header columns:
         columns_count = len(df.axes[1])
         # Define next columns: 

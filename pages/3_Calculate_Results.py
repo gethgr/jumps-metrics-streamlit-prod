@@ -15,6 +15,7 @@ import biosignalsnotebooks as bsnb
 # Scientific packages
 from numpy import arange, sin, pi
 from numpy.random import randn
+import requests
 
 ############## ############## PAGE 3 CALCULATE RESULTS ############# ############# ############## ########################
 st.set_page_config(
@@ -26,7 +27,10 @@ st.set_page_config(
 
 st.write("H")
 
-dftest = pd.DataFrame("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
+response = requests.get("https://sportsmetrics.geth.gr")
+st.write(response)
+
+dftest = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
 st.write("dftest 1", dftest)
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton

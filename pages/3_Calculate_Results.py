@@ -24,6 +24,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+dftest = pd.DataFrame("https://sportsmetrics.geth.gr/storage/TestBeta")
+st.write("dftest", dftest)
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton
 # set the variable g:
@@ -125,7 +127,7 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
         else:
             st.write("There is no entry with this ID")
 
-
+url_list
 # main function to get all the data from trial-file, depending on the id of the user:
 def get_data():
     if url_list:

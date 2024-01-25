@@ -39,6 +39,9 @@ st.write("plottwist",response3)
 response3 = requests.get("https://in.gr")
 st.write("i n",response3)
 
+response3 = requests.get("https://artdigital.gr")
+st.write("art",response3)
+
 
 
 dftest1 = pd.read_csv("https://paramithenios.gr/testfolder/testOther.csv")

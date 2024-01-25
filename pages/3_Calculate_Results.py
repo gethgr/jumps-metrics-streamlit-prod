@@ -24,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-dftest = pd.DataFrame("https://sportsmetrics.geth.gr/storage/TestBeta")
+dftest = pd.DataFrame("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
 st.write("dftest", dftest)
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton

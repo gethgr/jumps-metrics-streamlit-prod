@@ -25,30 +25,30 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.write("H")
+# st.write("H")
 
-response1 = requests.get("https://sportsmetrics.geth.gr")
-st.write("sportsmetrics",response1)
+# response1 = requests.get("https://sportsmetrics.geth.gr")
+# st.write("sportsmetrics",response1)
 
-response2 = requests.get("https://geth.gr")
-st.write("geth",response2)
+# response2 = requests.get("https://geth.gr")
+# st.write("geth",response2)
 
-response3 = requests.get("https://paramithenios.gr")
-st.write("plottwist",response3)
+# response3 = requests.get("https://paramithenios.gr")
+# st.write("plottwist",response3)
 
-response3 = requests.get("https://in.gr")
-st.write("i n",response3)
+# response3 = requests.get("https://in.gr")
+# st.write("i n",response3)
 
-response3 = requests.get("https://artdigital.gr")
-st.write("art",response3)
+# response3 = requests.get("https://artdigital.gr")
+# st.write("art",response3)
 
 
 
-dftest1 = pd.read_csv("https://paramithenios.gr/testfolder/testOther.csv")
-st.write("parami testOther", dftest1)
+# dftest1 = pd.read_csv("https://paramithenios.gr/testfolder/testOther.csv")
+# st.write("parami testOther", dftest1)
 
-dftest2 = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
-st.write("dftest 1", dftest2)
+# dftest2 = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
+# st.write("dftest 1", dftest2)
 
 
 #Make the connection with Supabase - Database:
@@ -134,11 +134,15 @@ with st.expander("List of all entries from the database.", expanded=True):
             st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[(df_jumps_table['Occupy'] == occupy_search) & (df_jumps_table['Fullname'] == fullname_search) & (df_jumps_table['Type of Trial'] == type_of_trial_search)], use_container_width=True)        
     else:
         st.write("There are no entries in the database! Please insert first!")
+
 with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):   
     url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results:",value = 0,step= 1)
+    # dokimastika
+    file_try = st.file_uploader("Choose a file*", type="csv")
     id_submitted = st.form_submit_button("Calculate Results")
     # Querry to find the data row of specific ID
-    if url_id_number_input:
+    if url_id_number_input and file_try:
+
         def select_filepath_from_specific_id():
             query=con.table("jumps_table").select("*").eq("id", url_id_number_input).execute()
             return query
@@ -147,17 +151,26 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
         url_list =  query.data
         # List with values depending on the querry
         if url_list:
-            url = url_list[0]['filepath'].replace(" ", "%20")
+
+            # dokimastika to ekana comment to apo katw
+            #url = url_list[0]['filepath'].replace(" ", "%20")
+            # na to ksekanw comment to apo panw ^
+
             st.write("Person ID:", url_list[0]['id'])
         else:
             st.write("There is no entry with this ID")
+    else:
+        st.write("Please fill in both fields.")
 
-url_list
 # main function to get all the data from trial-file, depending on the id of the user:
 def get_data():
     if url_list:
         storage_options = {'User-Agent': 'Mozilla/5.0'}
-        df = pd.read_csv(url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
+        df = pd.read_csv(file_try)
+        # dokimastika to ekana comment to apo katw
+        #df = pd.read_csv(url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
+        # na to ksekanw comment to apo panw ^ 
+        
         # Define Header columns:
         columns_count = len(df.axes[1])
         # Define next columns: 

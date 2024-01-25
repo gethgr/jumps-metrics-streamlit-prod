@@ -27,8 +27,19 @@ st.set_page_config(
 
 st.write("H")
 
-response = requests.get("https://sportsmetrics.geth.gr")
-st.write(response)
+response1 = requests.get("https://sportsmetrics.geth.gr")
+st.write(response1)
+
+response2 = requests.get("https://geth.gr")
+st.write(response2)
+
+response3 = requests.get("https://plottwist.gr")
+st.write(response3)
+
+
+
+dftest1 = pd.read_csv("https://geth.gr/testfolder/testOther.csv")
+st.write("testOther", dftest)
 
 dftest = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
 st.write("dftest 1", dftest)

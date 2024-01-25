@@ -32,3 +32,27 @@ with col1:
     )
 with col2:
     st.write("")
+
+
+st.write("H")
+
+response1 = requests.get("https://sportsmetrics.geth.gr")
+st.write("sportsmetrics",response1)
+
+response2 = requests.get("https://geth.gr")
+st.write("geth",response2)
+
+response3 = requests.get("https://paramithenios.gr")
+st.write("plottwist",response3)
+
+response3 = requests.get("https://artdigital.gr")
+st.write("art",response3)
+
+
+
+dftest1 = pd.read_csv("https://paramithenios.gr/testfolder/testOther.csv")
+st.write("parami testOther", dftest1)
+
+dftest2 = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
+st.write("dftest 1", dftest2)
+

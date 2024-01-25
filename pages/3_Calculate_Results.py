@@ -39,10 +39,10 @@ st.write(response3)
 
 
 dftest1 = pd.read_csv("https://geth.gr/testfolder/testOther.csv")
-st.write("testOther", dftest)
+st.write("testOther", dftest1)
 
-dftest = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
-st.write("dftest 1", dftest)
+dftest2 = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
+st.write("dftest 1", dftest2)
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton
 # set the variable g:

@@ -28,21 +28,26 @@ st.set_page_config(
 st.write("H")
 
 response1 = requests.get("https://sportsmetrics.geth.gr")
-st.write(response1)
+st.write("sportsmetrics",response1)
 
 response2 = requests.get("https://geth.gr")
-st.write(response2)
+st.write("geth",response2)
 
-response3 = requests.get("https://plottwist.gr")
-st.write(response3)
+response3 = requests.get("https://paramithenios.gr")
+st.write("plottwist",response3)
+
+response3 = requests.get("https://in.gr")
+st.write("i n",response3)
 
 
 
-dftest1 = pd.read_csv("https://geth.gr/testfolder/testOther.csv")
-st.write("testOther", dftest1)
+dftest1 = pd.read_csv("https://paramithenios.gr/testfolder/testOther.csv")
+st.write("parami testOther", dftest1)
 
 dftest2 = pd.read_csv("https://sportsmetrics.geth.gr/storage/TestBeta.csv")
 st.write("dftest 1", dftest2)
+
+
 #Make the connection with Supabase - Database:
 #@st.experimental_singleton
 # set the variable g:

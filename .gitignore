@@ -1,4 +1,5 @@
-/.streamlit
+/.streamlit/secrets.toml
 /backup_supabase
 /backup_trials_files
 /Beta_Pages
+/autoBackup

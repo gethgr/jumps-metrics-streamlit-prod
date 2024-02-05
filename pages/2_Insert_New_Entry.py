@@ -18,7 +18,6 @@ st.set_page_config(
     
 )
 
-
 #Make the connection with Supabase - Database:
 # @st.experimental_memo
 def init_connection():
@@ -74,51 +73,68 @@ with st.form("Create a new entry", clear_on_submit=False):
         #     st.write(type_of_trial)
         drop_height = st.number_input("Drop Height (m)",  help="The height of the drop jump.")
         
-        
     filepath = st.file_uploader("Choose a file*", type="csv", help="The file that you prepared in the 'Prepare File' page in csv.")
     submitted = st.form_submit_button("Submit values", help="By pressing this button, a new entry registers into database.")
-    
+
     if submitted:
-        
+
         if fullname and age and height and weight and occupy and type_of_trial !='-' and filepath:
+            # df_csv_file = pd.read_csv(filepath)
+            # filename_with_extension = filepath.name
+            # file_path = "prepared_csv_files/" +  filename_with_extension
+            # df_csv_file.to_csv(file_path, index=False)
+            # df_test1 = pd.read_csv(file_path)
+            # df_test1
+    
+            df_csv_file = pd.read_csv(filepath)
             
             filename_with_extension = filepath.name
-            # Filename without extension
+            file_path = "prepared_csv_files/" +  filename_with_extension
+            
+            df_csv_file.to_csv(file_path,  index=False)
+            
+            # # Filename without extension
             filename = os.path.splitext(filename_with_extension)[0]
 
-            def storage_connection():
-                hostname = st.secrets["hostname"]
-                username = st.secrets["username"]
-                password = st.secrets["password"]
+            # def storage_connection():
+            #     hostname = st.secrets["hostname"]
+            #     username = st.secrets["username"]
+            #     password = st.secrets["password"]
                 
-                return hostname,username,password
-            hostname,username,password = storage_connection()
+            #     return hostname,username,password
+            # hostname,username,password = storage_connection()
             
-            ftp = ftplib.FTP(hostname,username,password)
+            # ftp = ftplib.FTP(hostname,username,password)
             
             
-            # This is the method to take the temporary path of the uploaded file and the value in bytes of it.
-            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                fp_PosixPath = Path(tmp_file.name)
-                fp_PosixPath.write_bytes(filepath.getvalue())
-            # This is to take the str of PosixPath.
-            fp_str = str(fp_PosixPath)
-            # This is our localfile's path in str.
-            localfile = fp_str
-            # This is the remote path of the server to be stored.
-            remotefile='/sportsmetrics.geth.gr/storage/' + filename_with_extension
+            # # This is the method to take the temporary path of the uploaded file and the value in bytes of it.
+            # with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            #     fp_PosixPath = Path(tmp_file.name)
+            #     fp_PosixPath.write_bytes(filepath.getvalue())
+            # # This is to take the str of PosixPath.
+            # fp_str = str(fp_PosixPath)
+            # # This is our localfile's path in str.
+            # localfile = fp_str
+            # # This is the remote path of the server to be stored.
+            
+            
+            # #remotefile='/sportsmetrics.geth.gr/storage/' + filename_with_extension
+            # remotefile='/home/ftp_user/' + filename_with_extension
 
-            # This is the method to store the localfile in remote server through ftp.
-            with open(localfile, "rb") as file:
-                ftp.storbinary('STOR %s' % remotefile, file)
-            ftp.quit()
+
+
+            # # This is the method to store the localfile in remote server through ftp.
+            # with open(localfile, "rb") as file:
+            #     ftp.storbinary('STOR %s' % remotefile, file)
+            # ftp.quit()
             
-            filepath="https://sportsmetrics.geth.gr/storage/" + filename_with_extension
+            # filepath='/home/ftp_user/' + filename_with_extension
+            # #filepath="https://sportsmetrics.geth.gr/storage/" + filename_with_extension
                      
             list = (fullname,email,occupy,type_of_trial,filename)
             def add_entries_to_jumps_table(supabase):
                 value = {'fullname': fullname, 'email': email, 'occupy': occupy, 'type_of_trial': type_of_trial,
-                        'filename': filename, "filepath": filepath, "height": height, "weight": weight, "age": age , 'instructor': instructor, 'drop_height': drop_height}
+                        'filename': filename, "filepath": file_path, "height": height, "weight": weight, "age": age , 'instructor': instructor, 'drop_height': drop_height}
                 data = supabase.table('jumps_table').insert(value).execute()
             def main():
                 new_entry = add_entries_to_jumps_table(con)

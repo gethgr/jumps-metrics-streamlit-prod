@@ -46,29 +46,29 @@ def init_connection():
 con = init_connection()
 ############-------END OF CONNECTION WITH DATABASE/SUPABASE--------#######
 
-##################------------------SIDEBAR-------------------############
-with st.sidebar.expander("DELETE USER", expanded=False):
-    st.error("Warning this is pernament")
-    with st.form("delete user"):
-        id_to_delete = st.number_input("Type ID of user to delete", value=0, step=1)
-        
-        verify_delete_text_input = st.text_input("Type 'Delete' in the field above to proceed")
-        id_to_delete_button = st.form_submit_button("Delete User")
-
-    if id_to_delete_button and verify_delete_text_input=="Delete":
-        def delete_entry_from_jumps_statistics_table(supabase):
-            query=con.table("jumps_statistics_table").delete().eq("id", id_to_delete).execute()
-            return query
-        query = delete_entry_from_jumps_statistics_table(con)
-        # Check if list query.data is empty or not
-        if query.data:
-            def main():
-                delete_entry = delete_entry_from_jumps_statistics_table(con)
-            main()
-            st.success('Thank you! This entry has been deleted from database!')
-        else:
-            st.warning("There is no entry with this id to delete!")
-############--------END OF SIDEBAR-----------#################
+#########################----SIDEBAR------##########################
+def delete_entry_from_jumps_table(supabase, id_to_delete):
+    query = con.table("jumps_statistics_table").delete().eq("id", id_to_delete).execute()
+    return query
+    
+def sidebar():
+    with st.sidebar.expander("DELETE USER", expanded=False):
+        st.error("Warning this is pernament")
+        with st.form("delete user"):
+            # ask from user the ID that want to delete:
+            id_to_delete = st.number_input("Type ID of user to delete", value=0, step=1)
+            verify_delete_text_input = st.text_input("Type 'Delete' in the field above to proceed")
+            id_to_delete_button = st.form_submit_button("Delete User")
+        if id_to_delete_button and verify_delete_text_input=="Delete":
+            query = delete_entry_from_jumps_table(con, id_to_delete)
+            # Check if list query.data is empty or not
+            if query.data:
+                st.success('Thank you! This entry has been deleted from database!')
+            else:
+                st.warning("There is no entry with this id to delete!")
+    return()
+sidebar()
+#########################----END OF SIDEBAR------##########################
 
 ######----START OF THE APP------##########
 def select_all_jumps_statistics_table():
@@ -160,6 +160,7 @@ def display_charts(df, select_user, select_type_of_trial, start_date, end_date):
             #paper_bgcolor="LightSteelBlue",
         )
         st.plotly_chart(fig, use_container_width=True)  
+    df
     with col2:
         trials_count_per_date = df['Date of trial'].value_counts()[0]
         st.write("##### Trials per Dates for all date period:")

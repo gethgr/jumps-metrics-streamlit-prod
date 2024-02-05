@@ -28,6 +28,7 @@ st.sidebar.info("-Finaly check the Verify box and export the file from the 'Expo
 with st.expander("Show File Form", expanded=True):
     uploaded_file = st.file_uploader("Choose a file")
 platform_mass = st.number_input("Give the platfrom mass:")
+
 #@st.cache(allow_output_mutation=True)
 def get_data():
     if uploaded_file:

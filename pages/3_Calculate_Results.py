@@ -148,7 +148,6 @@ def get_data():
 
         ####--New Lines---####
         #url_list[0]['filepath'] = url_list[0]['filepath'].replace('https://sportsmetrics.geth.gr/storage/', 'prepared_csv_files/')
-        url_list[0]['filepath']
         df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
         ####--New Lines---####
         # na to ksekanw comment to apo panw ^

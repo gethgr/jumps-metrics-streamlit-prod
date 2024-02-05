@@ -282,7 +282,8 @@ with col3:
         st.pyplot(fig3)
 
 
-df_corr = df[['Jump (Impulse)', 'Duration I', 'Duration II', 'Duration III', 'Duration IV', 'Impulse body weight', 'Impulse gravity', 'velocity_momentum']].copy() #, 'Impulse body weight','Impulse gravity','Force max', 'Force mean',  'Force sum', 'Jump (Impulse)', 'duration_from_till_time', 'duration_from_start_trial_to_from_time']].copy()
+df_corr = df[['Jump (Impulse)', 'RFD Total', 'Duration I', 'Duration II', 'Duration III', 'Duration IV', 'Impulse body weight', 'Impulse gravity', 'velocity_momentum']].copy() #, 'Impulse body weight','Impulse gravity','Force max', 'Force mean',  'Force sum', 'Jump (Impulse)', 'duration_from_till_time', 'duration_from_start_trial_to_from_time']].copy()
+df_corr_rfd = df[['Force max', 'Jump (Impulse)', 'RFD Total', 'Duration I', 'Duration II', 'Duration III', 'Duration IV', 'Impulse body weight', 'Impulse gravity', 'velocity_momentum']].copy() #, 'Impulse body weight','Impulse gravity','Force max', 'Force mean',  'Force sum', 'Jump (Impulse)', 'duration_from_till_time', 'duration_from_start_trial_to_from_time']].copy()
 corr_matrix = df_corr.corr()
 col1,col2=st.columns([2,1], gap="Large")
 with col1:
@@ -304,7 +305,10 @@ with col2:
     st.write("**Duration III**: The time period from start trial untill the landing time ")
     st.write("Correlation table:")
     corr_matrix_jump = df_corr.corr()['Jump (Impulse)']
+    corr_matrix_rfd = df_corr_rfd.corr()['RFD Total']
     st.dataframe(corr_matrix_jump, use_container_width=True)
+    st.dataframe(corr_matrix_rfd, use_container_width=True)
+
 # col1, col2 = st.columns(2, gap="large")
 # with col1:
 #     corr_matrix_jump = df_corr.corr()['Jump (Impulse)']

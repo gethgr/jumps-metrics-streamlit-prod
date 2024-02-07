@@ -148,6 +148,10 @@ def get_data():
 
         ####--New Lines---####
         #url_list[0]['filepath'] = url_list[0]['filepath'].replace('https://sportsmetrics.geth.gr/storage/', 'prepared_csv_files/')
+        sports_url = 'https://sportsmetrics.geth.gr/storage/'
+        test_url = sports_url + url_list[0]['filename'].replace(" ", "%20") + '.csv'
+        st.write("testUrl", test_url)
+        df = pd.read_csv(sports_url + url_list[0]['filename'].replace(" ", "%20") + '.csv' )
         df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
         ####--New Lines---####
         # na to ksekanw comment to apo panw ^

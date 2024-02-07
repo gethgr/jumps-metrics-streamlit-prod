@@ -1,6 +1,5 @@
 [server]
 runOnSave = true
-enableXsrfProtection = false
 
 [theme]
 base="light"

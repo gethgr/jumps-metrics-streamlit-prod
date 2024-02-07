@@ -33,3 +33,6 @@ with col1:
     )
 with col2:
     st.write("")
+
+response = requests.get("https://geth.gr")
+st.write(response)

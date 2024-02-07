@@ -1,6 +1,11 @@
 import streamlit as st
 import requests
 import pandas as pd
+
+
+import urllib.request
+import urllib.error
+
 st.set_page_config(
     page_title="Jumps Metrics App | SPESS",
     page_icon="random",
@@ -37,15 +42,19 @@ with col2:
 
 
 
-test_URL = 'https://geth.gr'
-hdr={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
+# test_URL = 'https://geth.gr'
+# hdr={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
 
-# hdr = {'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Mobile Safari/537.36'}
-# req = requests.get(test_URL,headers=hdr)
+# response = requests.get(test_URL,headers=hdr)
+# content = response.content
 
+# st.write(response)
 
-
-response = requests.get(test_URL,headers=hdr)
-content = response.content
-
-st.write(response)
+# url = 'https://geth.gr'
+# try:
+#     response = urllib.request.urlopen(url)
+#     st.write(response.code)
+# except urllib.error.HTTPError as e:
+#     st.write('Error code: ', e.code)
+# except urllib.error.URLError as e:
+#     st.write('Reason: ', e.reason)

@@ -34,5 +34,18 @@ with col1:
 with col2:
     st.write("")
 
-response = requests.get("https://geth.gr")
+
+
+
+test_URL = 'https://geth.gr'
+hdr={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
+
+# hdr = {'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Mobile Safari/537.36'}
+# req = requests.get(test_URL,headers=hdr)
+
+
+
+response = requests.get(test_URL,headers=hdr)
+content = response.content
+
 st.write(response)

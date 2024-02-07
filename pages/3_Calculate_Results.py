@@ -141,14 +141,14 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
 # main function to get all the data from trial-file, depending on the id of the user:
 def get_data():
     if url_list:
-        #storage_options = {'User-Agent': 'Mozilla/5.0'}
+        storage_options = {'User-Agent': 'Mozilla/5.0'}
         #df = pd.read_csv(file_try)
         # dokimastika to ekana comment to apo katw
 
 
         ####--New Lines---####
         #url_list[0]['filepath'] = url_list[0]['filepath'].replace('https://sportsmetrics.geth.gr/storage/', 'prepared_csv_files/')
-        df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"))#, storage_options=storage_options)
+        df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
         ####--New Lines---####
         # na to ksekanw comment to apo panw ^
         

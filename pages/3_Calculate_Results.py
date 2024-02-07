@@ -141,21 +141,21 @@ with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):
 # main function to get all the data from trial-file, depending on the id of the user:
 def get_data():
     if url_list:
-        storage_options = {'User-Agent': 'Mozilla/5.0'}
+        #storage_options = {'User-Agent': 'Mozilla/5.0'}
         #df = pd.read_csv(file_try)
         # dokimastika to ekana comment to apo katw
 
         df_test = pd.read_csv("https://sportsmetrics.geth.gr/storage/MARS_ISOB_3RD_0007804d2eef_2023-05-28_10-37-20.csv")
         
         st.write("df_test",df_test)
-        
+
         ####--New Lines---####
         #url_list[0]['filepath'] = url_list[0]['filepath'].replace('https://sportsmetrics.geth.gr/storage/', 'prepared_csv_files/')
         sports_url = 'https://sportsmetrics.geth.gr/storage/'
         test_url = sports_url + url_list[0]['filename'].replace(" ", "%20") + '.csv'
         st.write("testUrl", test_url)
         df = pd.read_csv(sports_url + url_list[0]['filename'].replace(" ", "%20") + '.csv' )
-        df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
+        df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"))#, storage_options=storage_options)
         ####--New Lines---####
         # na to ksekanw comment to apo panw ^
 

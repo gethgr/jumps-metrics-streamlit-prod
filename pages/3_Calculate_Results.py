@@ -145,7 +145,10 @@ def get_data():
         #df = pd.read_csv(file_try)
         # dokimastika to ekana comment to apo katw
 
-
+        df_test = pd.read_csv("https://sportsmetrics.geth.gr/storage/MARS_ISOB_3RD_0007804d2eef_2023-05-28_10-37-20.csv")
+        
+        st.write("df_test",df_test)
+        
         ####--New Lines---####
         #url_list[0]['filepath'] = url_list[0]['filepath'].replace('https://sportsmetrics.geth.gr/storage/', 'prepared_csv_files/')
         sports_url = 'https://sportsmetrics.geth.gr/storage/'
@@ -155,7 +158,7 @@ def get_data():
         df = pd.read_csv( url_list[0]['filepath'].replace(" ", "%20"), storage_options=storage_options)
         ####--New Lines---####
         # na to ksekanw comment to apo panw ^
-        
+
         
         # Define Header columns:
         columns_count = len(df.axes[1])

@@ -73,11 +73,12 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2022-07-18 17:44:50.028634+00').execute()
         return query
     query = select_all_from_jumps_table()
     # dataframe with the results of table (query):
     df_jumps_table = pd.DataFrame(query.data)
+    
     fullname_search = " "
     # create search fields to search on the dataframe:
     if not df_jumps_table.empty:

@@ -50,11 +50,11 @@ with col2:
 
 # st.write(response)
 
-# url = 'https://geth.gr'
-# try:
-#     response = urllib.request.urlopen(url)
-#     st.write(response.code)
-# except urllib.error.HTTPError as e:
-#     st.write('Error code: ', e.code)
-# except urllib.error.URLError as e:
-#     st.write('Reason: ', e.reason)
+url = 'https://geth.gr'
+try:
+    response = urllib.request.urlopen(url)
+    st.write(response.code)
+except urllib.error.HTTPError as e:
+    st.write('Error code: ', e.code)
+except urllib.error.URLError as e:
+    st.write('Reason: ', e.reason)

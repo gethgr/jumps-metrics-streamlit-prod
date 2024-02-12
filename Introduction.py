@@ -50,19 +50,19 @@ with col2:
 
 # st.write(response)
 
-url1 = 'https://jumpmetric.geth.gr'
+url1 = 'https://sportsmetrics.geth.gr'
 url2 = 'https://plottwist.gr'
-response2 = urllib.request.urlopen(url2)
-st.write("url2",response1.code)
+response1 = urllib.request.urlopen(url1)
+st.write("url1",response1.code)
 
-try:
-    response1 = urllib.request.urlopen(url1)
-    response2 = urllib.request.urlopen(url2)
+# try:
+#     response1 = urllib.request.urlopen(url1)
+#     response2 = urllib.request.urlopen(url2)
 
-    st.write("url1",response1.code)
-    st.write("url2",response1.code)
+#     st.write("url1",response1.code)
+#     st.write("url2",response2.code)
 
-except urllib.error.HTTPError as e:
-    st.write('Error code: ', e.code)
-except urllib.error.URLError as e:
-    st.write('Reason: ', e.reason)
+# except urllib.error.HTTPError as e:
+#     st.write('Error code: ', e.code)
+# except urllib.error.URLError as e:
+#     st.write('Reason: ', e.reason)

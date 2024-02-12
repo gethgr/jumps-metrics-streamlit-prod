@@ -50,7 +50,7 @@ with col2:
 
 # st.write(response)
 
-url = 'https://geth.gr'
+url = 'https://jumpmetric.geth.gr'
 try:
     response = urllib.request.urlopen(url)
     st.write(response.code)

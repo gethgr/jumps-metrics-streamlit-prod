@@ -52,6 +52,9 @@ with col2:
 
 url1 = 'https://sportsmetrics.geth.gr'
 url2 = 'https://plottwist.gr'
+
+res = requests.get(url1)
+st.write('res',res)
 response1 = urllib.request.urlopen(url1)
 st.write("url1",response1.code)
 

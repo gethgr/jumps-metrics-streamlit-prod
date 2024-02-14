@@ -2,10 +2,6 @@ import streamlit as st
 import requests
 import pandas as pd
 
-
-import urllib.request
-import urllib.error
-
 st.set_page_config(
     page_title="Jumps Metrics App | SPESS",
     page_icon="random",
@@ -40,32 +36,12 @@ with col2:
     st.write("")
 
 
+url = "https://sportsmetrics.geth.gr"
+response = requests.get(url)
+st.write(response)
 
+csv_url = "https://sportsmetrics.geth.gr/storage/NISOPP_POST20_CJ2_2023-12-30_09-44-31.csv"
 
-# test_URL = 'https://geth.gr'
-# hdr={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'}
+df = pd.read_csv(csv_url)
 
-# response = requests.get(test_URL,headers=hdr)
-# content = response.content
-
-# st.write(response)
-
-url1 = 'https://sportsmetrics.geth.gr'
-url2 = 'https://plottwist.gr'
-
-res = requests.get(url1)
-st.write('res',res)
-response1 = urllib.request.urlopen(url1)
-st.write("url1",response1.code)
-
-# try:
-#     response1 = urllib.request.urlopen(url1)
-#     response2 = urllib.request.urlopen(url2)
-
-#     st.write("url1",response1.code)
-#     st.write("url2",response2.code)
-
-# except urllib.error.HTTPError as e:
-#     st.write('Error code: ', e.code)
-# except urllib.error.URLError as e:
-#     st.write('Reason: ', e.reason)
+df

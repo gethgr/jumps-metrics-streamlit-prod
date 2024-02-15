@@ -36,12 +36,12 @@ with col2:
     st.write("")
 
 
-url = "https://sportsmetrics.geth.gr"
-response = requests.get(url)
-st.write(response)
+# url = "https://sportsmetrics.geth.gr"
+# response = requests.get(url)
+# st.write(response)
 
-csv_url = "https://sportsmetrics.geth.gr/storage/NISOPP_POST20_CJ2_2023-12-30_09-44-31.csv"
+# csv_url = "https://sportsmetrics.geth.gr/storage/NISOPP_POST20_CJ2_2023-12-30_09-44-31.csv"
 
-df = pd.read_csv(csv_url)
+# df = pd.read_csv(csv_url)
 
-df
+# df

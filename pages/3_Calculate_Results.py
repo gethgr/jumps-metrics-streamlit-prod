@@ -41,6 +41,8 @@ con = init_connection()
 
 #########################----SIDEBAR------##########################
 st.title("Calculate Results")
+
+
 with st.sidebar.expander("DELETE USER", expanded=False):
     st.error("Warning this is pernament")
     with st.form("delete user"):
@@ -1046,4 +1048,6 @@ if url_list:
 #########################------------END OF MAIN AREA------------##########################
        
         
-            
+url = "https://sportsmetrics.geth.gr"
+response = requests.get(url)
+st.sidebar.write(response)

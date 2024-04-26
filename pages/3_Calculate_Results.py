@@ -16,6 +16,34 @@ import biosignalsnotebooks as bsnb
 from numpy import arange, sin, pi
 from numpy.random import randn
 import requests
+import hmac
+
+def check_password():
+    """Returns `True` if the user had the correct password."""
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if hmac.compare_digest(st.session_state["password"], st.secrets["pass"]):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the password.
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the password is validated.
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show input for password.
+    st.text_input(
+        "Password", type="password", on_change=password_entered, key="password"
+    )
+    if "password_correct" in st.session_state:
+        st.error("😕 Password incorrect")
+    return False
+
+
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
 
 ############## ############## PAGE 3 CALCULATE RESULTS ############# ############# ############## ########################
 st.set_page_config(
@@ -43,27 +71,27 @@ con = init_connection()
 st.title("Calculate Results")
 
 
-with st.sidebar.expander("DELETE USER", expanded=False):
-    st.error("Warning this is pernament")
-    with st.form("delete user"):
-        id_to_delete = st.number_input("Type ID of user to delete", value=0, step=1)
+# with st.sidebar.expander("DELETE USER", expanded=False):
+#     st.error("Warning this is pernament")
+#     with st.form("delete user"):
+#         id_to_delete = st.number_input("Type ID of user to delete", value=0, step=1)
         
-        verify_delete_text_input = st.text_input("Type 'Delete' in the field above to proceed")
-        id_to_delete_button = st.form_submit_button("Delete User")
+#         verify_delete_text_input = st.text_input("Type 'Delete' in the field above to proceed")
+#         id_to_delete_button = st.form_submit_button("Delete User")
 
-    if id_to_delete_button and verify_delete_text_input=="Delete":
-        def delete_entry_from_jumps_table(supabase):
-            query=con.table("jumps_table").delete().eq("id", id_to_delete).execute()
-            return query
-        query = delete_entry_from_jumps_table(con)
-        # Check if list query.data is empty or not
-        if query.data:
-            def main():
-                delete_entry = delete_entry_from_jumps_table(con)
-            main()
-            st.success('Thank you! This entry has been deleted from database!')
-        else:
-            st.warning("There is no entry with this id to delete!")
+#     if id_to_delete_button and verify_delete_text_input=="Delete":
+#         def delete_entry_from_jumps_table(supabase):
+#             query=con.table("jumps_table").delete().eq("id", id_to_delete).execute()
+#             return query
+#         query = delete_entry_from_jumps_table(con)
+#         # Check if list query.data is empty or not
+#         if query.data:
+#             def main():
+#                 delete_entry = delete_entry_from_jumps_table(con)
+#             main()
+#             st.success('Thank you! This entry has been deleted from database!')
+#         else:
+#             st.warning("There is no entry with this id to delete!")
 #########################----END OF SIDEBAR------##########################
 
 #########################----MAIN AREA------##########################
@@ -75,11 +103,22 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").gte('created_at','2023-03-29 18:24:49.215035+00').execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2023-08-29 18:24:49.215035+00').execute()
         return query  
     query = select_all_from_jumps_table()
-    # dataframe with the results of table (query):
+
     df_jumps_table = pd.DataFrame(query.data)
+    # df_jumps_table_unique_values = df_jumps_table.drop_duplicates(subset = ["fullname"])
+
+    # df_jumps_table_unique_values.loc[0] = [int, float("Nan"), '-', '-', '-', '-','-','-', float("Nan"), float("Nan"), 0, '-', float("Nan")]
+
+    # st.write("**Select a person from the database or fill in the fields below.**")
+    # fullname_input = st.selectbox("Select Entry. " , (df_jumps_table_unique_values['fullname']))
+    # row_index = df_jumps_table_unique_values.index[df_jumps_table_unique_values['fullname']==fullname_input].tolist()
+    # st.markdown("""---""")
+
+    # # dataframe with the results of table (query):
+    # df_jumps_table = df_jumps_table['fullname']==fullname_input
     
     fullname_search = " "
     # create search fields to search on the dataframe:
@@ -96,7 +135,8 @@ with st.expander("List of all entries from the database.", expanded=True):
             fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
         # conditions depending on searches input fields:
         if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
-            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False), use_container_width=True)
+            st.write("#### Please select first the user to display their trials:")
+            #st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False), use_container_width=True)
         elif fullname_search and not occupy_search and type_of_trial_search == " ":
             st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
         elif occupy_search and fullname_search == " " and type_of_trial_search == " ":

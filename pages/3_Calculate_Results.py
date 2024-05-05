@@ -103,7 +103,7 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").gte('created_at','2023-08-29 18:24:49.215035+00').execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2023-11-29 18:24:49.215035+00').execute()
         return query  
     query = select_all_from_jumps_table()
 
@@ -126,7 +126,7 @@ with st.expander("List of all entries from the database.", expanded=True):
         df_jumps_table.columns = ['ID', 'Created At', 'Fullname', 'Email', 'Occupy', 'Type of Trial', 'Filename', 'Filepath', 'Height', 'Weight', 'Age', 'Instructor', 'Drop Height']
         col1, col2, col3 = st.columns([3,2,2])
         with col2:
-            type_of_trial_search = st.selectbox("Επέλεξε ίδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO", "SJ"))
+            type_of_trial_search = st.selectbox("Επέλεξε είδος προσπάθειας  " , options = (" ", "CMJ", "DJ", "ISO", "SJ"))
         with col3:
             occupy_search = st.text_input("Occupy:")
         with col1:
@@ -135,8 +135,8 @@ with st.expander("List of all entries from the database.", expanded=True):
             fullname_search = st.selectbox("Αναφορά σε Χρήστη  " , options = options)
         # conditions depending on searches input fields:
         if not occupy_search and fullname_search == " " and type_of_trial_search == " ":
-            st.write("#### Please select first the user to display their trials:")
-            #st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False), use_container_width=True)
+            #st.write("#### Please select first the user to display their trials:")
+            st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False), use_container_width=True)
         elif fullname_search and not occupy_search and type_of_trial_search == " ":
             st.dataframe(df_jumps_table[['ID', 'Created At', 'Fullname', 'Occupy', 'Type of Trial', 'Filename', 'Height', 'Weight', 'Age', 'Instructor']].sort_values('Created At', ascending=False)[df_jumps_table['Fullname']== fullname_search], use_container_width=True)
         elif occupy_search and fullname_search == " " and type_of_trial_search == " ":

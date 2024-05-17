@@ -268,9 +268,11 @@ if url_list:
     df = get_data()
     #Find standard deviation
     for i in range(0,450):
-         xi_xmean = (((df.loc[i, 'Force'] - df.loc[1:450,'Force'].mean()))*2)
+         xi_xmean = (((df.loc[i, 'Force'] - df.loc[1:450,'Force'].mean()))**2)
     xi_xmean_sum = xi_xmean.sum()
-    std = ( ( xi_xmean_sum ** 2 ) / ( 2000 -1 ) ) * ( 1 / 2)
+    std = ( ( xi_xmean_sum ) / ( 450 -1 ) ) * ( 1 / 2)
+
+
     
     ######------FIND TIMES FOR CMJ TRIAL--------#######
     if url_list[0]['type_of_trial'] == "CMJ":
@@ -287,8 +289,10 @@ if url_list:
                 break
         # Find Start Try Time
         for i in range(0,take_off_time):
-            if df.loc[i,'Force'] < (df['Force'].mean() - 80):
+            if df.loc[i,'Force'] > df.loc[i+1,'Force'] + 1 :
+            #if df.loc[i,'Force'] < (df['Force'].mean() - 80): 
                 start_try_time = i
+                vaar = df['Force'].mean()
                 break
         closest_to_zero_velocity = df.loc[start_try_time+50:take_off_time,'Velocity'].sub(0).abs().idxmin()
         closest_to_average_force_1st = (df.loc[start_try_time:closest_to_zero_velocity,'Force']-df['Force'].mean()).sub(0).abs().idxmin()

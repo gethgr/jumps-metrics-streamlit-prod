@@ -1,7 +1,9 @@
 import os
 import streamlit as st
 import pandas as pd
-
+import ftplib
+import tempfile
+from pathlib import Path
  
 ############## ############## PAGE 1 PREPARE THE FILE ############# ############# ############## ##############
       
@@ -25,6 +27,50 @@ st.sidebar.info("-Finaly check the Verify box and export the file from the 'Expo
 
 
 
+with st.sidebar.form("File", clear_on_submit=False):
+
+    with st.expander("Show File", expanded=True):
+        filepath = st.file_uploader("Choose a txt file")
+    submitted_file = st.form_submit_button("Submit file")
+
+if submitted_file:
+    if filepath:
+        filename_with_extension = filepath.name
+        filename = os.path.splitext(filename_with_extension)[0]
+
+        def storage_connection():
+            hostname = st.secrets["hostname"]
+            username = st.secrets["username"]
+            password = st.secrets["password"]
+            
+            return hostname,username,password
+        hostname,username,password = storage_connection()
+        ftp = ftplib.FTP(hostname,username,password)
+        
+        # This is the method to take the temporary path of the uploaded file and the value in bytes of it.
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            fp_PosixPath = Path(tmp_file.name)
+            fp_PosixPath.write_bytes(filepath.getvalue())
+        # This is to take the str of PosixPath.
+        fp_str = str(fp_PosixPath)
+        # This is our localfile's path in str.
+        localfile = fp_str
+        # This is the remote path of the server to be stored.
+        
+        remotefile='/sportsmetrics.geth.gr/storage/' + filename_with_extension
+        #remotefile='/home/ftp_user/' + filename_with_extension
+
+        # This is the method to store the localfile in remote server through ftp.
+        with open(localfile, "rb") as file:
+            ftp.storbinary('STOR %s' % remotefile, file)
+        ftp.quit()
+        
+        #filepath='/home/ftp_user/' + filename_with_extension
+        
+        filepath="https://sportsmetrics.geth.gr/storage/" + filename_with_extension
+        st.sidebar.write("thank you")  
+
+
 with st.expander("Show File Form", expanded=True):
     uploaded_file = st.file_uploader("Choose a file")
 platform_mass = st.number_input("Give the platfrom mass:")
@@ -41,7 +87,7 @@ def get_data():
         if columns_count == 5:
             df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
         if columns_count == 6:
-            df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
+            df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4', 'Col_7']
         if columns_count == 8:
             df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4', 'Col_7', 'Col_8']
         if columns_count == 9:
@@ -107,7 +153,7 @@ if uploaded_file:
         export = st.checkbox('Verify you have insert proper Platform Mass Value:')
 
         if export:
-            if 4.5 <= platform_mass <= 10:
+            if 0 <= platform_mass <= 10:
                 st.success("You are able to export your data.")
                 st.download_button(
                     label="Export File",
@@ -117,3 +163,6 @@ if uploaded_file:
                 )
             else:
                 st.warning("Please give correct platform mass!")
+
+
+

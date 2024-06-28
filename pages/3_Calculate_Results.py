@@ -103,7 +103,7 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").gte('created_at','2024-03-29 18:24:49.215035+00').execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2024-07-29 18:24:49.215035+00').execute()
         return query  
     query = select_all_from_jumps_table()
 
@@ -654,7 +654,7 @@ if url_list:
     # Find the Jump depending on time in Air for DJ Trial:
     if url_list[0]['type_of_trial'] == "DJ":
         #jump_depending_take_off_velocity = (df.loc[take_off_time, 'Velocity'] ** 2) / (2 * 9.81)
-        jump_depending_time_in_air = (1 / 2) * 9.81 * (((landing_time - take_off_time) / 1000 ) / 2 ) ** 2 
+        jump_depending_time_in_air = (1 / 2) * 9.81 * (((landing_time - user_time_input_max_jumps_table) / 1000 ) / 2 ) ** 2 
         # rsi duration is : take_off_time - start_try_time
         rsi = jump_depending_time_in_air / ((user_time_input_max_jumps_table - user_time_input_start_try_time) / 1000 )
     
@@ -668,7 +668,7 @@ if url_list:
     if brushed_submitted or st.session_state.load_state:
         st.session_state.load_state = True
 
-        df_brushed = df[(df.index >= user_time_input_min_jumps_table) & (df.index <= user_time_input_max_jumps_table)]
+        #mmyfile#x >= user_time_input_min_jumps_table) & (df.index <= user_time_input_max_jumps_table)]
         
         ######### ######## ########## FIND JUMP DEPENDING ON IMPLUSE FOR CMJ, SJ ############ ########### ############
         if url_list[0]['type_of_trial'] == "CMJ" or url_list[0]['type_of_trial'] == "SJ" :

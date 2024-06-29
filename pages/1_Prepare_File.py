@@ -87,7 +87,7 @@ def get_data():
         if columns_count == 5:
             df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
         if columns_count == 6:
-            df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4', 'Col_7']
+            df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4']
         if columns_count == 8:
             df_raw_data.columns = ['Time', 'Col_2', 'Mass_1', 'Mass_2', 'Mass_3', 'Mass_4', 'Col_7', 'Col_8']
         if columns_count == 9:

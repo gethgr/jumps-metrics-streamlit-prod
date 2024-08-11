@@ -103,7 +103,7 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").gte('created_at','2024-04-29 18:24:49.215035+00').execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2024-06-29 18:24:49.215035+00').execute()
         return query  
     query = select_all_from_jumps_table()
 
@@ -266,6 +266,8 @@ def get_data():
 
 if url_list:
     df = get_data()
+    columns_count = len(df.axes[1])
+    st.write("stiles" , columns_count)
     #Find standard deviation
     for i in range(0,450):
          xi_xmean = (((df.loc[i, 'Force'] - df.loc[1:450,'Force'].mean()))**2)

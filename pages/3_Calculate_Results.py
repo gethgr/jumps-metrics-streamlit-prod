@@ -155,7 +155,7 @@ with st.expander("List of all entries from the database.", expanded=True):
         st.write("There are no entries in the database! Please insert first!")
 
 with st.sidebar.form("Type the ID of your link:", clear_on_submit=False):   
-    url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results:",value = 0,step= 1)
+    url_id_number_input = st.number_input("Type the ID of your prerferred trial and Press Calculate Results.:",value = 0,step= 1)
     # dokimastika
     #file_try = st.file_uploader("Choose a file*", type="csv")
     id_submitted = st.form_submit_button("Calculate Results")

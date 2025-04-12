@@ -103,7 +103,7 @@ with st.expander("List of all entries from the database.", expanded=True):
     #@st.experimental_memo(ttl=300)
     # function: query to get the data of table:
     def select_all_from_jumps_table():
-        query=con.table("jumps_table").select("*").gte('created_at','2024-09-09 18:24:49.215035+00').execute()
+        query=con.table("jumps_table").select("*").gte('created_at','2024-09-10 18:24:49.215035+00').execute()
         return query  
     query = select_all_from_jumps_table()
 

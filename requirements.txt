@@ -8,3 +8,4 @@ bokeh==2.4.3
 pyxlsb
 xlsxwriter
 seaborn
+ipython<9
